@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic[email]
+weasyprint
+jinja2
+httpx
+pytest
+pytest-asyncio
+pytest-httpx
