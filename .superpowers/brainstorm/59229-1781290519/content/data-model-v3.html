@@ -1,0 +1,96 @@
+<h2>Modelo de Datos — v3</h2>
+<p class="subtitle">Modelo final con todas las entidades</p>
+
+<div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 16px; align-items: flex-start;">
+
+  <!-- Cliente -->
+  <div style="background: var(--surface); border: 2px solid #10b981; border-radius: 12px; padding: 20px; min-width: 220px;">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #10b981; margin-bottom: 8px; font-weight: 700;">Cliente</div>
+    <div style="font-family: monospace; font-size: 13px; line-height: 2;">
+      <div><span style="color: #f59e0b;">🔑</span> id <span style="color: var(--muted);">INTEGER PK</span></div>
+      <div>nombre <span style="color: var(--muted);">TEXT</span></div>
+      <div>apellido <span style="color: var(--muted);">TEXT</span></div>
+      <div>nif_dni <span style="color: var(--muted);">TEXT</span></div>
+      <div>telefono <span style="color: var(--muted);">TEXT</span></div>
+      <div>email <span style="color: var(--muted);">TEXT NULL</span></div>
+      <div>direccion <span style="color: var(--muted);">TEXT</span></div>
+      <div>localidad <span style="color: var(--muted);">TEXT</span></div>
+      <div>provincia <span style="color: var(--muted);">TEXT</span></div>
+    </div>
+    <div style="margin-top: 10px; padding: 6px 10px; background: rgba(16,185,129,0.1); border-radius: 6px; font-size: 11px; color: #10b981;">
+      + nif_dni, email
+    </div>
+  </div>
+
+  <!-- Arrow 1 -->
+  <div style="display: flex; align-items: center; font-size: 24px; color: var(--muted); padding-top: 20px;">1 ——&lt; N</div>
+
+  <!-- Vehicle -->
+  <div style="background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 20px; min-width: 220px;">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 8px; font-weight: 700;">Vehicle</div>
+    <div style="font-family: monospace; font-size: 13px; line-height: 2;">
+      <div><span style="color: #f59e0b;">🔑</span> id <span style="color: var(--muted);">INTEGER PK</span></div>
+      <div><span style="color: #60a5fa;">🔗</span> cliente_id <span style="color: var(--muted);">FK → Cliente</span></div>
+      <div>matricula <span style="color: var(--muted);">TEXT UNIQUE</span></div>
+      <div>marca <span style="color: var(--muted);">TEXT</span></div>
+      <div>modelo <span style="color: var(--muted);">TEXT</span></div>
+      <div>año <span style="color: var(--muted);">INTEGER</span></div>
+    </div>
+    <div style="margin-top: 10px; padding: 6px 10px; background: rgba(96,165,250,0.1); border-radius: 6px; font-size: 11px; color: #60a5fa;">
+      sin cambios
+    </div>
+  </div>
+
+  <!-- Arrow 2 -->
+  <div style="display: flex; align-items: center; font-size: 24px; color: var(--muted); padding-top: 20px;">1 ——&lt; N</div>
+
+  <!-- Order -->
+  <div style="background: var(--surface); border: 2px solid var(--accent); border-radius: 12px; padding: 20px; min-width: 240px;">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 8px; font-weight: 700;">Order (central)</div>
+    <div style="font-family: monospace; font-size: 13px; line-height: 2;">
+      <div><span style="color: #f59e0b;">🔑</span> id <span style="color: var(--muted);">INTEGER PK</span></div>
+      <div>numero_orden <span style="color: var(--muted);">TEXT UNIQUE</span></div>
+      <div><span style="color: #60a5fa;">🔗</span> vehicle_id <span style="color: var(--muted);">FK → Vehicle</span></div>
+      <div>estado <span style="color: var(--muted);">TEXT ENUM</span></div>
+      <div>descripcion <span style="color: var(--muted);">TEXT</span></div>
+      <div>kilometraje <span style="color: var(--muted);">INTEGER NULL</span></div>
+      <div>notas_internas <span style="color: var(--muted);">TEXT NULL</span></div>
+      <div>fecha_entrada <span style="color: var(--muted);">DATETIME</span></div>
+      <div>fecha_actualizacion <span style="color: var(--muted);">DATETIME</span></div>
+      <div>fecha_entrega <span style="color: var(--muted);">DATETIME NULL</span></div>
+    </div>
+    <div style="margin-top: 10px; padding: 6px 10px; background: rgba(139,92,246,0.1); border-radius: 6px; font-size: 11px; color: #a78bfa;">
+      + kilometraje, notas_internas
+    </div>
+  </div>
+
+  <!-- Arrow 3 -->
+  <div style="display: flex; align-items: center; font-size: 24px; color: var(--muted); padding-top: 20px;">1 ——&lt; N</div>
+
+  <!-- BudgetItem -->
+  <div style="background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 20px; min-width: 220px;">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 8px; font-weight: 700;">BudgetItem</div>
+    <div style="font-family: monospace; font-size: 13px; line-height: 2;">
+      <div><span style="color: #f59e0b;">🔑</span> id <span style="color: var(--muted);">INTEGER PK</span></div>
+      <div><span style="color: #60a5fa;">🔗</span> order_id <span style="color: var(--muted);">FK → Order</span></div>
+      <div>concepto <span style="color: var(--muted);">TEXT</span></div>
+      <div>tipo <span style="color: var(--muted);">ENUM</span></div>
+      <div>cantidad <span style="color: var(--muted);">NUMERIC</span></div>
+      <div>precio_unitario <span style="color: var(--muted);">NUMERIC</span></div>
+    </div>
+    <div style="margin-top: 10px; padding: 6px 10px; background: rgba(96,165,250,0.1); border-radius: 6px; font-size: 11px; color: #60a5fa;">
+      sin cambios
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top: 28px; padding: 16px; background: var(--surface); border-radius: 10px; border-left: 3px solid var(--accent); max-width: 900px; margin-left: auto; margin-right: auto;">
+  <div class="label">Notas del modelo final</div>
+  <ul style="margin: 8px 0 0; padding-left: 20px; line-height: 2; font-size: 13px;">
+    <li><strong>email</strong> y <strong>notas_internas</strong> y <strong>kilometraje</strong> son <code>NULL</code> — opcionales al crear</li>
+    <li><strong>nif_dni</strong> aparece en la cabecera de la factura PDF</li>
+    <li><strong>kilometraje</strong> se registra en la orden (no en el vehículo) para tener historial por visita</li>
+    <li>Total del presupuesto = <code>SUM(cantidad × precio_unitario)</code> calculado en runtime</li>
+  </ul>
+</div>

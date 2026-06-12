@@ -1,0 +1,134 @@
+<h2>Buscador — Input único inteligente</h2>
+<p class="subtitle">Detecta automáticamente matrícula, DNI o apellido según el patrón</p>
+
+<div style="background: #0f172a; border-radius: 12px; overflow: hidden; border: 1px solid #1e293b; max-width: 900px; margin: 16px auto 0;">
+
+  <!-- Navbar -->
+  <div style="background: #1e293b; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #334155;">
+    <div style="font-weight: 700; font-size: 15px; color: #f1f5f9;">🔧 TallerGest</div>
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <span style="font-size: 12px; color: #94a3b8;">Kanban</span>
+      <span style="font-size: 12px; color: #f1f5f9; font-weight: 700; border-bottom: 2px solid #3b82f6; padding-bottom: 2px;">Buscador</span>
+      <span style="font-size: 12px; color: #94a3b8;">Ajustes</span>
+    </div>
+  </div>
+
+  <div style="padding: 24px;">
+
+    <!-- Search input único -->
+    <div style="position: relative; margin-bottom: 10px;">
+      <div style="display: flex; align-items: center; background: #1e293b; border: 1.5px solid #3b82f6; border-radius: 10px; padding: 0 14px; gap: 10px;">
+        <span style="color: #64748b; font-size: 16px; flex-shrink: 0;">🔍</span>
+        <div style="flex: 1; padding: 12px 0; font-size: 14px; color: #f1f5f9; font-family: monospace; letter-spacing: 0.5px;">1234-ABC</div>
+        <!-- Badge tipo detectado -->
+        <div style="background: #1e3a5f; color: #93c5fd; border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; flex-shrink: 0;">Matrícula</div>
+        <!-- Botón limpiar -->
+        <div style="background: #334155; color: #94a3b8; border-radius: 6px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; flex-shrink: 0; font-weight: 700;">✕</div>
+      </div>
+    </div>
+
+    <!-- Hint texto -->
+    <div style="font-size: 11px; color: #475569; margin-bottom: 20px; padding-left: 4px;">
+      Escribe una matrícula <span style="color:#64748b;">(ej: 1234-ABC)</span>, DNI <span style="color:#64748b;">(ej: 12345678A)</span> o apellido <span style="color:#64748b;">(ej: García)</span>
+    </div>
+
+    <!-- Resultado matrícula -->
+    <div style="margin-bottom: 10px; font-size: 11px; color: #64748b;">
+      1 vehículo encontrado para matrícula <strong style="color:#93c5fd; font-family:monospace;">1234-ABC</strong>
+    </div>
+
+    <div style="background: #1e293b; border-radius: 10px; border: 1px solid #334155; overflow: hidden; margin-bottom: 24px;">
+      <div style="padding: 14px 18px; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #334155;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 16px; font-weight: 800; color: #f1f5f9; font-family: monospace;">1234-ABC</span>
+            <span style="font-size: 13px; color: #94a3b8;">Toyota Corolla · 2019</span>
+          </div>
+          <div style="margin-top: 6px; display: flex; gap: 16px;">
+            <span style="font-size: 12px; color: #94a3b8;">👤 García López, Ana</span>
+            <span style="font-size: 12px; color: #94a3b8;">📞 612 345 678</span>
+            <span style="font-size: 12px; color: #64748b;">DNI: 87654321Z</span>
+          </div>
+        </div>
+        <div style="background: #312e81; color: #a5b4fc; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 700;">1 orden activa</div>
+      </div>
+      <div style="padding: 12px 18px;">
+        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 10px;">Historial</div>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: #0f172a; border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #8b5cf6; cursor: pointer;">
+          <div style="display:flex; gap:12px; align-items:center;">
+            <span style="font-size: 12px; color: #64748b; font-family: monospace;">2024-018</span>
+            <span style="font-size: 12px; color: #f1f5f9;">Cambio de frenos + revisión</span>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <span style="font-size: 11px; color: #64748b;">Hoy</span>
+            <span style="background:#312e81; color:#a5b4fc; border-radius:4px; padding:2px 8px; font-size:10px; font-weight:600;">EN REPARACIÓN</span>
+            <span style="font-weight:700; color:#8b5cf6; font-size:12px;">320,00 €</span>
+            <span style="color:#64748b;">›</span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: #0f172a; border-radius: 8px; border-left: 3px solid #10b981; cursor: pointer; opacity: 0.75;">
+          <div style="display:flex; gap:12px; align-items:center;">
+            <span style="font-size: 12px; color: #64748b; font-family: monospace;">2024-003</span>
+            <span style="font-size: 12px; color: #f1f5f9;">ITV — Revisión general</span>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <span style="font-size: 11px; color: #64748b;">15/03/2024</span>
+            <span style="background:#064e3b; color:#6ee7b7; border-radius:4px; padding:2px 8px; font-size:10px; font-weight:600;">ENTREGADO</span>
+            <span style="font-weight:700; color:#10b981; font-size:12px;">185,00 €</span>
+            <span style="color:#64748b;">›</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Separador: estado vacío y estado apellido -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+
+      <!-- Estado: sin query -->
+      <div>
+        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px;">Input vacío (estado inicial)</div>
+        <div style="display: flex; align-items: center; background: #1e293b; border: 1.5px solid #334155; border-radius: 10px; padding: 0 14px; gap: 10px;">
+          <span style="color: #64748b; font-size: 16px;">🔍</span>
+          <div style="flex: 1; padding: 12px 0; font-size: 13px; color: #475569; font-style: italic;">Matrícula, DNI o apellido…</div>
+        </div>
+        <div style="font-size: 11px; color: #334155; margin-top: 6px; padding-left: 4px;">Sin resultados. Sin badge. Sin botón ✕.</div>
+      </div>
+
+      <!-- Estado: apellido -->
+      <div>
+        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px;">Búsqueda por apellido → lista de clientes</div>
+        <div style="display: flex; align-items: center; background: #1e293b; border: 1.5px solid #3b82f6; border-radius: 10px; padding: 0 14px; gap: 10px;">
+          <span style="color: #64748b; font-size: 16px;">🔍</span>
+          <div style="flex: 1; padding: 12px 0; font-size: 14px; color: #f1f5f9;">García</div>
+          <div style="background: #1c2b1e; color: #86efac; border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 600; white-space: nowrap;">Apellido</div>
+          <div style="background: #334155; color: #94a3b8; border-radius: 6px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; font-weight: 700;">✕</div>
+        </div>
+        <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="background: #1e293b; border-radius: 8px; padding: 8px 12px; border: 1px solid #334155; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 12px; color: #f1f5f9; font-weight: 600;">García López, Ana</div>
+              <div style="font-size: 11px; color: #64748b;">DNI: 87654321Z · 1 vehículo</div>
+            </div>
+            <span style="color:#64748b;">›</span>
+          </div>
+          <div style="background: #1e293b; border-radius: 8px; padding: 8px 12px; border: 1px solid #334155; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 12px; color: #f1f5f9; font-weight: 600;">García Martínez, Pedro</div>
+              <div style="font-size: 11px; color: #64748b;">DNI: 11223344B · 2 vehículos</div>
+            </div>
+            <span style="color:#64748b;">›</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 14px; padding: 12px 16px; background: var(--surface); border-radius: 8px; font-size: 12px; color: var(--muted); line-height: 1.9; max-width: 900px; margin-left: auto; margin-right: auto;">
+  <strong style="color: var(--fg);">Reglas de detección automática:</strong><br>
+  <code>/^[0-9]{4}-?[A-Z]{3}$/i</code> → Matrícula &nbsp;|&nbsp;
+  <code>/^[0-9]{7,8}[A-Z]$/i</code> → DNI/NIF &nbsp;|&nbsp;
+  Cualquier otra cadena → Apellido<br>
+  La búsqueda se dispara con <strong>Enter</strong> o tras 400 ms de inactividad (debounce). El botón ✕ solo aparece cuando hay texto escrito.
+</div>

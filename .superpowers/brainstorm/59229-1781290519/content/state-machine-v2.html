@@ -1,0 +1,106 @@
+<h2>Máquina de Estados — v2</h2>
+<p class="subtitle">Tres tipos de rechazo con cobros diferenciados</p>
+
+<div style="display: flex; justify-content: center; margin-top: 24px;">
+  <div style="width: 100%; max-width: 900px;">
+
+    <!-- Flujo principal -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 0;">
+
+      <!-- RECIBIDA -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <div style="background: #3b82f6; color: white; border-radius: 10px; padding: 12px 18px; font-weight: 700; font-size: 13px; text-align: center; min-width: 100px;">RECIBIDA</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; padding: 0 6px;">
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 2px;">añadir items</div>
+        <div style="font-size: 20px; color: #94a3b8;">──→</div>
+      </div>
+
+      <!-- PRESUPUESTADO -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <div style="background: #f59e0b; color: white; border-radius: 10px; padding: 12px 18px; font-weight: 700; font-size: 13px; text-align: center; min-width: 115px;">PRESUPUESTADO</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; padding: 0 6px;">
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 2px;">cliente acepta</div>
+        <div style="font-size: 20px; color: #94a3b8;">──→</div>
+      </div>
+
+      <!-- EN_REPARACION -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <div style="background: #8b5cf6; color: white; border-radius: 10px; padding: 12px 18px; font-weight: 700; font-size: 13px; text-align: center; min-width: 115px;">EN_REPARACION</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; padding: 0 6px;">
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 2px;">trabajo listo</div>
+        <div style="font-size: 20px; color: #94a3b8;">──→</div>
+      </div>
+
+      <!-- FINALIZADA -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <div style="background: #06b6d4; color: white; border-radius: 10px; padding: 12px 18px; font-weight: 700; font-size: 13px; text-align: center; min-width: 100px;">FINALIZADA</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; padding: 0 6px;">
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 2px;">pago + entrega</div>
+        <div style="font-size: 20px; color: #94a3b8;">──→</div>
+      </div>
+
+      <!-- ENTREGADO -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <div style="background: #10b981; color: white; border-radius: 10px; padding: 12px 18px; font-weight: 700; font-size: 13px; text-align: center; min-width: 100px;">ENTREGADO</div>
+        <div style="font-size: 11px; color: var(--muted); text-align: center;">Terminal · PDF</div>
+      </div>
+
+    </div>
+
+    <!-- Flechas de rechazo -->
+    <div style="margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; max-width: 860px; margin-left: auto; margin-right: auto;">
+
+      <!-- Rechazo 1 -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <div style="font-size: 11px; color: #94a3b8; text-align: center;">desde <strong style="color:#3b82f6;">RECIBIDA</strong></div>
+        <div style="font-size: 22px; color: #ef4444;">↓</div>
+        <div style="background: #ef4444; color: white; border-radius: 10px; padding: 10px 16px; font-weight: 700; font-size: 13px; text-align: center; width: 100%;">RECHAZADO</div>
+        <div style="background: var(--surface); border-radius: 8px; padding: 10px 12px; font-size: 12px; line-height: 1.7; text-align: center; border: 1px solid var(--border);">
+          Cliente se arrepiente<br>antes del presupuesto<br><strong style="color:#10b981;">Sin cobro</strong>
+        </div>
+      </div>
+
+      <!-- Rechazo 2 -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <div style="font-size: 11px; color: #94a3b8; text-align: center;">desde <strong style="color:#f59e0b;">PRESUPUESTADO</strong></div>
+        <div style="font-size: 22px; color: #ef4444;">↓</div>
+        <div style="background: #ef4444; color: white; border-radius: 10px; padding: 10px 16px; font-weight: 700; font-size: 13px; text-align: center; width: 100%;">RECHAZADO</div>
+        <div style="background: var(--surface); border-radius: 8px; padding: 10px 12px; font-size: 12px; line-height: 1.7; text-align: center; border: 1px solid var(--border);">
+          Cliente rechaza presupuesto<br><strong style="color:#f59e0b;">Cobro: 30 min mano de obra</strong><br>Se genera cargo automático<br>al rechazar
+        </div>
+      </div>
+
+      <!-- Rechazo 3 -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <div style="font-size: 11px; color: #94a3b8; text-align: center;">desde <strong style="color:#8b5cf6;">EN_REPARACION</strong></div>
+        <div style="font-size: 22px; color: #ef4444;">↓</div>
+        <div style="background: #ef4444; color: white; border-radius: 10px; padding: 10px 16px; font-weight: 700; font-size: 13px; text-align: center; width: 100%;">RECHAZADO</div>
+        <div style="background: var(--surface); border-radius: 8px; padding: 10px 12px; font-size: 12px; line-height: 1.7; text-align: center; border: 1px solid var(--border);">
+          Cliente cancela en reparación<br><strong style="color:#ef4444;">Cobro: horas usadas + materiales</strong><br>El mecánico edita los items<br>reales antes de confirmar
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Nota sobre cobro en rechazo -->
+    <div style="margin-top: 24px; padding: 14px 18px; background: var(--surface); border-radius: 10px; border-left: 3px solid #f59e0b; max-width: 860px; margin-left: auto; margin-right: auto;">
+      <div class="label">Flujo al rechazar desde EN_REPARACION</div>
+      <div style="font-size: 13px; line-height: 1.9; margin-top: 8px;">
+        1. El mecánico pulsa "Cancelar reparación" → se abre un panel de <strong>cobro por cancelación</strong><br>
+        2. El sistema precarga los items del presupuesto original como referencia<br>
+        3. El mecánico ajusta: elimina lo no hecho, modifica cantidades de lo parcialmente hecho<br>
+        4. Confirma → la orden pasa a <strong>rechazado</strong> con los items de cobro guardados<br>
+        5. Se genera PDF de <strong>factura de cancelación</strong> con los cargos reales
+      </div>
+    </div>
+
+  </div>
+</div>

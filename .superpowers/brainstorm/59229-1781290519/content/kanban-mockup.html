@@ -1,0 +1,192 @@
+<h2>Vista Kanban</h2>
+<p class="subtitle">Propuesta de interfaz principal — cada carril es un estado</p>
+
+<div style="margin-top: 16px; background: #0f172a; border-radius: 12px; overflow: hidden; border: 1px solid #1e293b;">
+
+  <!-- Top nav -->
+  <div style="background: #1e293b; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #334155;">
+    <div style="font-weight: 700; font-size: 15px; color: #f1f5f9;">🔧 TallerGest</div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <div style="background: #334155; border-radius: 8px; padding: 6px 14px; font-size: 12px; color: #94a3b8; cursor: pointer;">🔍 Buscar matrícula</div>
+      <div style="background: #3b82f6; border-radius: 8px; padding: 6px 14px; font-size: 12px; color: white; font-weight: 600; cursor: pointer;">+ Nueva orden</div>
+    </div>
+  </div>
+
+  <!-- Kanban board -->
+  <div style="display: flex; gap: 0; overflow-x: auto; padding: 16px; min-height: 480px; align-items: flex-start;">
+
+    <!-- RECIBIDA -->
+    <div style="min-width: 200px; flex: 1; margin: 0 6px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: #3b82f6;"></div>
+        <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Recibida</span>
+        <span style="background: #1e293b; color: #64748b; border-radius: 10px; padding: 1px 7px; font-size: 11px;">2</span>
+      </div>
+      <!-- Card 1 -->
+      <div style="background: #1e293b; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 3px solid #3b82f6; cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="font-weight: 700; color: #f1f5f9; font-size: 13px;">1234-ABC</div>
+          <div style="font-size: 10px; color: #64748b;">2024-018</div>
+        </div>
+        <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">Toyota Corolla · 2019</div>
+        <div style="font-size: 11px; color: #64748b; margin-top: 6px;">👤 García López</div>
+        <div style="font-size: 11px; color: #64748b;">📅 Hoy 09:30</div>
+      </div>
+      <!-- Card 2 -->
+      <div style="background: #1e293b; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 3px solid #3b82f6; cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="font-weight: 700; color: #f1f5f9; font-size: 13px;">5678-DEF</div>
+          <div style="font-size: 10px; color: #64748b;">2024-019</div>
+        </div>
+        <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">Seat Ibiza · 2021</div>
+        <div style="font-size: 11px; color: #64748b; margin-top: 6px;">👤 Martínez Ruiz</div>
+        <div style="font-size: 11px; color: #64748b;">📅 Hoy 10:15</div>
+      </div>
+    </div>
+
+    <div style="width: 1px; background: #1e293b; align-self: stretch; margin: 0 2px;"></div>
+
+    <!-- PRESUPUESTADO -->
+    <div style="min-width: 200px; flex: 1; margin: 0 6px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b;"></div>
+        <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Presupuestado</span>
+        <span style="background: #1e293b; color: #64748b; border-radius: 10px; padding: 1px 7px; font-size: 11px;">1</span>
+      </div>
+      <!-- Card -->
+      <div style="background: #1e293b; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 3px solid #f59e0b; cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="font-weight: 700; color: #f1f5f9; font-size: 13px;">9012-GHI</div>
+          <div style="font-size: 10px; color: #64748b;">2024-015</div>
+        </div>
+        <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">Ford Focus · 2018</div>
+        <div style="font-size: 11px; color: #64748b; margin-top: 6px;">👤 Sánchez Pérez</div>
+        <div style="font-size: 11px; color: #64748b;">📅 Ayer 16:00</div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 11px; color: #94a3b8;">Total presupuesto</span>
+          <span style="font-weight: 700; color: #f59e0b; font-size: 13px;">320,00 €</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 1px; background: #1e293b; align-self: stretch; margin: 0 2px;"></div>
+
+    <!-- EN_REPARACION -->
+    <div style="min-width: 200px; flex: 1; margin: 0 6px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: #8b5cf6;"></div>
+        <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">En Reparación</span>
+        <span style="background: #1e293b; color: #64748b; border-radius: 10px; padding: 1px 7px; font-size: 11px;">2</span>
+      </div>
+      <!-- Card 1 -->
+      <div style="background: #1e293b; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 3px solid #8b5cf6; cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="font-weight: 700; color: #f1f5f9; font-size: 13px;">3456-JKL</div>
+          <div style="font-size: 10px; color: #64748b;">2024-012</div>
+        </div>
+        <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">Renault Megane · 2020</div>
+        <div style="font-size: 11px; color: #64748b; margin-top: 6px;">👤 López Fernández</div>
+        <div style="font-size: 11px; color: #64748b;">📅 Hace 2 días</div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 11px; color: #94a3b8;">Presupuesto</span>
+          <span style="font-weight: 700; color: #8b5cf6; font-size: 13px;">580,00 €</span>
+        </div>
+        <div style="margin-top: 6px;">
+          <span style="background: #312e81; color: #a5b4fc; border-radius: 4px; padding: 2px 6px; font-size: 10px;">🔒 Bloqueado</span>
+        </div>
+      </div>
+      <!-- Card 2 -->
+      <div style="background: #1e293b; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 3px solid #8b5cf6; cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="font-weight: 700; color: #f1f5f9; font-size: 13px;">7890-MNO</div>
+          <div style="font-size: 10px; color: #64748b;">2024-013</div>
+        </div>
+        <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">BMW Serie 3 · 2022</div>
+        <div style="font-size: 11px; color: #64748b; margin-top: 6px;">👤 Rodríguez Gil</div>
+        <div style="font-size: 11px; color: #64748b;">📅 Hace 1 día</div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #334155; display: flex; justify-content: space-between;">
+          <span style="font-size: 11px; color: #94a3b8;">Presupuesto</span>
+          <span style="font-weight: 700; color: #8b5cf6; font-size: 13px;">1.240,00 €</span>
+        </div>
+        <div style="margin-top: 6px;">
+          <span style="background: #312e81; color: #a5b4fc; border-radius: 4px; padding: 2px 6px; font-size: 10px;">🔒 Bloqueado</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 1px; background: #1e293b; align-self: stretch; margin: 0 2px;"></div>
+
+    <!-- FINALIZADA -->
+    <div style="min-width: 200px; flex: 1; margin: 0 6px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: #06b6d4;"></div>
+        <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Finalizada</span>
+        <span style="background: #1e293b; color: #64748b; border-radius: 10px; padding: 1px 7px; font-size: 11px;">1</span>
+      </div>
+      <div style="background: #1e293b; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 3px solid #06b6d4; cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="font-weight: 700; color: #f1f5f9; font-size: 13px;">2345-PQR</div>
+          <div style="font-size: 10px; color: #64748b;">2024-010</div>
+        </div>
+        <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">Volkswagen Golf · 2017</div>
+        <div style="font-size: 11px; color: #64748b; margin-top: 6px;">👤 Torres Alonso</div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #334155; display: flex; justify-content: space-between;">
+          <span style="font-size: 11px; color: #94a3b8;">Total</span>
+          <span style="font-weight: 700; color: #06b6d4; font-size: 13px;">215,00 €</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 1px; background: #1e293b; align-self: stretch; margin: 0 2px;"></div>
+
+    <!-- ENTREGADO -->
+    <div style="min-width: 200px; flex: 1; margin: 0 6px; opacity: 0.7;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></div>
+        <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Entregado</span>
+        <span style="background: #1e293b; color: #64748b; border-radius: 10px; padding: 1px 7px; font-size: 11px;">últimos 7d</span>
+      </div>
+      <div style="background: #1e293b; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 3px solid #10b981; cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="font-weight: 700; color: #f1f5f9; font-size: 13px;">6789-STU</div>
+          <div style="font-size: 10px; color: #64748b;">2024-009</div>
+        </div>
+        <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">Honda Civic · 2020</div>
+        <div style="font-size: 11px; color: #64748b; margin-top: 6px;">👤 Navarro Costa</div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #334155; display: flex; justify-content: space-between;">
+          <span style="font-size: 11px; color: #94a3b8;">Facturado</span>
+          <span style="font-weight: 700; color: #10b981; font-size: 13px;">760,00 €</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 1px; background: #1e293b; align-self: stretch; margin: 0 2px;"></div>
+
+    <!-- RECHAZADO -->
+    <div style="min-width: 200px; flex: 1; margin: 0 6px; opacity: 0.6;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444;"></div>
+        <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Rechazado</span>
+        <span style="background: #1e293b; color: #64748b; border-radius: 10px; padding: 1px 7px; font-size: 11px;">últimos 7d</span>
+      </div>
+      <div style="background: #1e293b; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 3px solid #ef4444; cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="font-weight: 700; color: #f1f5f9; font-size: 13px;">1111-VWX</div>
+          <div style="font-size: 10px; color: #64748b;">2024-011</div>
+        </div>
+        <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">Peugeot 208 · 2016</div>
+        <div style="font-size: 11px; color: #64748b; margin-top: 6px;">👤 Jiménez Vega</div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #334155; display: flex; justify-content: space-between;">
+          <span style="font-size: 11px; color: #94a3b8;">Cobrado</span>
+          <span style="font-weight: 700; color: #ef4444; font-size: 13px;">45,00 €</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div style="margin-top: 14px; padding: 10px 16px; background: var(--surface); border-radius: 8px; font-size: 12px; color: var(--muted); line-height: 1.8; max-width: 900px; margin-left: auto; margin-right: auto;">
+  <strong style="color: var(--fg);">Notas de diseño:</strong>
+  Los carriles <strong>Entregado</strong> y <strong>Rechazado</strong> muestran solo órdenes de los últimos 7 días para no saturar el tablero. El historial completo se consulta desde el buscador por matrícula. El badge 🔒 aparece solo en <strong>En Reparación</strong> para indicar que el presupuesto está bloqueado.
+</div>

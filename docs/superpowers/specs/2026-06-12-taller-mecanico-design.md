@@ -180,7 +180,11 @@ PUT    /clientes/{id}                    editar cliente
 # Vehículos
 POST   /vehiculos                        crear (requiere cliente_id)
 GET    /vehiculos/{id}                   detalle + historial de órdenes
-GET    /vehiculos/buscar?matricula=      búsqueda por matrícula
+GET    /vehiculos/buscar?matricula=      búsqueda por matrícula → devuelve vehículo + historial
+
+# Búsqueda de clientes
+GET    /clientes/buscar?apellido=        búsqueda por apellido (parcial, case-insensitive)
+GET    /clientes/buscar?nif_dni=         búsqueda exacta por DNI/NIF
 
 # Órdenes
 GET    /ordenes                          para el Kanban: estados no terminales + entregado/rechazado últimos 7 días
@@ -211,7 +215,7 @@ Las violaciones de reglas de negocio devuelven `422 Unprocessable Entity` con me
 
 ### Vistas (Vue Router)
 - `/` → `KanbanView` — tablero principal
-- `/buscar` → `SearchView` — búsqueda por matrícula + historial
+- `/buscar` → `SearchView` — búsqueda por matrícula, apellido o DNI/NIF
 - `/ajustes` → `AjustesView` — configuración del taller (tarifa/hora, nombre, CIF, dirección)
 
 ### Componentes clave
@@ -219,7 +223,7 @@ Las violaciones de reglas de negocio devuelven `422 Unprocessable Entity` con me
 - `OrderCard` — tarjeta en el Kanban; muestra matrícula, cliente, modelo, total presupuesto y badge 🔒 si está bloqueado
 - `OrderDetailSheet` — Sheet de shadcn-vue que se abre al pulsar una tarjeta; muestra datos completos, items del presupuesto y botones de acción según estado
 - `CancellationDialog` — Dialog de shadcn-vue para introducir cobros reales al cancelar desde `en_reparacion`
-- `SearchPanel` — buscador por matrícula con historial de todas las órdenes del vehículo
+- `SearchPanel` — input único inteligente con detección automática de tipo por patrón de texto: `/^[0-9]{4}-?[A-Z]{3}$/i` → matrícula, `/^[0-9]{7,8}[A-Z]$/i` → DNI/NIF, cualquier otra cadena → apellido. Muestra un badge inline con el tipo detectado. Botón ✕ inline para limpiar (solo visible con texto). Búsqueda con debounce de 400 ms. Por matrícula devuelve 1 vehículo con historial completo; por apellido o DNI devuelve lista de clientes coincidentes, al pulsar uno se despliega su historial de vehículos y órdenes
 
 ### Componentes shadcn-vue usados
 `Sheet` · `Dialog` · `Button` · `Badge` · `Card` · `Table` · `Input` · `Label` · `Separator`

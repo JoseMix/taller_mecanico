@@ -1,0 +1,65 @@
+<h2>Modelo de Datos</h2>
+<p class="subtitle">Entidades y relaciones de la base de datos SQLite</p>
+
+<div style="display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; margin-top: 16px;">
+
+  <!-- Vehicle -->
+  <div style="background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 20px; min-width: 220px;">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 8px; font-weight: 700;">Vehicle</div>
+    <div style="font-family: monospace; font-size: 13px; line-height: 2;">
+      <div><span style="color: #f59e0b;">🔑</span> id <span style="color: var(--muted);">INTEGER PK</span></div>
+      <div>matricula <span style="color: var(--muted);">TEXT UNIQUE</span></div>
+      <div>marca <span style="color: var(--muted);">TEXT</span></div>
+      <div>modelo <span style="color: var(--muted);">TEXT</span></div>
+      <div>año <span style="color: var(--muted);">INTEGER</span></div>
+      <div>cliente_nombre <span style="color: var(--muted);">TEXT</span></div>
+      <div>cliente_telefono <span style="color: var(--muted);">TEXT</span></div>
+    </div>
+  </div>
+
+  <!-- Arrow -->
+  <div style="display: flex; align-items: center; font-size: 28px; color: var(--muted);">1 ——&lt; N</div>
+
+  <!-- Order -->
+  <div style="background: var(--surface); border: 2px solid var(--accent); border-radius: 12px; padding: 20px; min-width: 240px;">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 8px; font-weight: 700;">Order (central)</div>
+    <div style="font-family: monospace; font-size: 13px; line-height: 2;">
+      <div><span style="color: #f59e0b;">🔑</span> id <span style="color: var(--muted);">INTEGER PK</span></div>
+      <div>numero_orden <span style="color: var(--muted);">TEXT UNIQUE</span></div>
+      <div><span style="color: #60a5fa;">🔗</span> vehicle_id <span style="color: var(--muted);">FK → Vehicle</span></div>
+      <div>estado <span style="color: var(--muted);">TEXT ENUM</span></div>
+      <div>descripcion <span style="color: var(--muted);">TEXT</span></div>
+      <div>fecha_entrada <span style="color: var(--muted);">DATETIME</span></div>
+      <div>fecha_actualizacion <span style="color: var(--muted);">DATETIME</span></div>
+      <div>fecha_entrega <span style="color: var(--muted);">DATETIME NULL</span></div>
+    </div>
+  </div>
+
+  <!-- Arrow -->
+  <div style="display: flex; align-items: center; font-size: 28px; color: var(--muted);">1 ——&lt; N</div>
+
+  <!-- BudgetItem -->
+  <div style="background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 20px; min-width: 220px;">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 8px; font-weight: 700;">BudgetItem</div>
+    <div style="font-family: monospace; font-size: 13px; line-height: 2;">
+      <div><span style="color: #f59e0b;">🔑</span> id <span style="color: var(--muted);">INTEGER PK</span></div>
+      <div><span style="color: #60a5fa;">🔗</span> order_id <span style="color: var(--muted);">FK → Order</span></div>
+      <div>concepto <span style="color: var(--muted);">TEXT</span></div>
+      <div>tipo <span style="color: var(--muted);">ENUM (mano_obra | pieza)</span></div>
+      <div>cantidad <span style="color: var(--muted);">NUMERIC</span></div>
+      <div>precio_unitario <span style="color: var(--muted);">NUMERIC</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top: 28px; padding: 16px; background: var(--surface); border-radius: 10px; border-left: 3px solid var(--accent); max-width: 720px; margin-left: auto; margin-right: auto;">
+  <div class="label">Reglas de integridad</div>
+  <ul style="margin: 8px 0 0; padding-left: 20px; line-height: 2; font-size: 13px;">
+    <li><strong>numero_orden</strong> se genera automáticamente al crear: formato <code>YYYY-NNN</code> (ej: <code>2024-001</code>)</li>
+    <li><strong>estado</strong> solo puede ser uno de: <code>recibida | presupuestado | en_reparacion | finalizada | entregado | rechazado</code></li>
+    <li>Un vehículo solo puede tener una orden con estado activo (no <code>entregado</code> ni <code>rechazado</code>)</li>
+    <li><strong>BudgetItems</strong> no se pueden añadir/editar/borrar si la orden está en <code>en_reparacion</code>, <code>finalizada</code>, <code>entregado</code> o <code>rechazado</code></li>
+    <li>El total del presupuesto se calcula como suma de <code>cantidad × precio_unitario</code> de todos los items</li>
+  </ul>
+</div>

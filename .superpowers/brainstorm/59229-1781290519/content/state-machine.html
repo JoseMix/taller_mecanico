@@ -1,0 +1,140 @@
+<h2>Máquina de Estados de la Orden</h2>
+<p class="subtitle">Transiciones válidas y reglas de negocio</p>
+
+<div style="display: flex; justify-content: center; margin-top: 24px;">
+  <div style="position: relative; width: 100%; max-width: 860px;">
+
+    <!-- Flow horizontal -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 0; flex-wrap: nowrap;">
+
+      <!-- RECIBIDA -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <div style="background: #3b82f6; color: white; border-radius: 10px; padding: 12px 18px; font-weight: 700; font-size: 13px; text-align: center; min-width: 100px;">
+          RECIBIDA
+        </div>
+        <div style="font-size: 11px; color: var(--muted); text-align: center;">Estado inicial<br>al crear orden</div>
+      </div>
+
+      <!-- Arrow → PRESUPUESTADO -->
+      <div style="display: flex; flex-direction: column; align-items: center; padding: 0 4px;">
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 2px;">añadir items</div>
+        <div style="font-size: 20px; color: #94a3b8;">──→</div>
+      </div>
+
+      <!-- PRESUPUESTADO -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <div style="background: #f59e0b; color: white; border-radius: 10px; padding: 12px 18px; font-weight: 700; font-size: 13px; text-align: center; min-width: 110px;">
+          PRESUPUESTADO
+        </div>
+        <div style="font-size: 11px; color: var(--muted); text-align: center;">Con importe<br>calculado</div>
+      </div>
+
+      <!-- Arrow → EN_REPARACION -->
+      <div style="display: flex; flex-direction: column; align-items: center; padding: 0 4px;">
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 2px;">cliente acepta</div>
+        <div style="font-size: 20px; color: #94a3b8;">──→</div>
+      </div>
+
+      <!-- EN_REPARACION -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <div style="background: #8b5cf6; color: white; border-radius: 10px; padding: 12px 18px; font-weight: 700; font-size: 13px; text-align: center; min-width: 110px;">
+          EN_REPARACION
+        </div>
+        <div style="font-size: 11px; color: var(--muted); text-align: center;">Presupuesto<br>bloqueado</div>
+      </div>
+
+      <!-- Arrow → FINALIZADA -->
+      <div style="display: flex; flex-direction: column; align-items: center; padding: 0 4px;">
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 2px;">trabajo listo</div>
+        <div style="font-size: 20px; color: #94a3b8;">──→</div>
+      </div>
+
+      <!-- FINALIZADA -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <div style="background: #06b6d4; color: white; border-radius: 10px; padding: 12px 18px; font-weight: 700; font-size: 13px; text-align: center; min-width: 100px;">
+          FINALIZADA
+        </div>
+        <div style="font-size: 11px; color: var(--muted); text-align: center;">Reparación<br>completada</div>
+      </div>
+
+      <!-- Arrow → ENTREGADO -->
+      <div style="display: flex; flex-direction: column; align-items: center; padding: 0 4px;">
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 2px;">pago + entrega</div>
+        <div style="font-size: 20px; color: #94a3b8;">──→</div>
+      </div>
+
+      <!-- ENTREGADO -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <div style="background: #10b981; color: white; border-radius: 10px; padding: 12px 18px; font-weight: 700; font-size: 13px; text-align: center; min-width: 100px;">
+          ENTREGADO
+        </div>
+        <div style="font-size: 11px; color: var(--muted); text-align: center;">Terminal<br>Genera PDF</div>
+      </div>
+
+    </div>
+
+    <!-- Flechas de rechazo hacia abajo -->
+    <div style="display: flex; justify-content: center; margin-top: 32px; gap: 0; position: relative;">
+
+      <!-- Spacer para alinear con RECIBIDA -->
+      <div style="min-width: 100px; display: flex; flex-direction: column; align-items: center;">
+        <div style="width: 2px; height: 40px; background: #ef4444;"></div>
+        <div style="font-size: 10px; color: #ef4444; text-align: center; margin-top: 4px;">cliente<br>desiste</div>
+      </div>
+
+      <div style="min-width: 170px;"></div>
+
+      <!-- Spacer para alinear con PRESUPUESTADO -->
+      <div style="min-width: 110px; display: flex; flex-direction: column; align-items: center;">
+        <div style="width: 2px; height: 40px; background: #ef4444;"></div>
+        <div style="font-size: 10px; color: #ef4444; text-align: center; margin-top: 4px;">cliente<br>rechaza</div>
+      </div>
+
+    </div>
+
+    <!-- RECHAZADO -->
+    <div style="display: flex; justify-content: center; margin-top: 8px; gap: 160px; padding-left: 90px;">
+      <div style="background: #ef4444; color: white; border-radius: 10px; padding: 10px 18px; font-weight: 700; font-size: 13px; text-align: center; min-width: 100px;">
+        RECHAZADO
+      </div>
+      <div style="background: #ef4444; color: white; border-radius: 10px; padding: 10px 18px; font-weight: 700; font-size: 13px; text-align: center; min-width: 100px;">
+        RECHAZADO
+      </div>
+    </div>
+    <div style="display: flex; justify-content: center; margin-top: 4px; gap: 160px; padding-left: 90px;">
+      <div style="font-size: 11px; color: var(--muted); text-align: center;">Terminal · no editable</div>
+      <div style="font-size: 11px; color: var(--muted); text-align: center;">Terminal · no editable</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Reglas -->
+<div style="margin-top: 32px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; max-width: 860px; margin-left: auto; margin-right: auto;">
+
+  <div style="flex: 1; min-width: 240px; padding: 14px 16px; background: var(--surface); border-radius: 10px; border-left: 3px solid #ef4444;">
+    <div class="label" style="color: #ef4444;">Bloqueado</div>
+    <ul style="margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.9;">
+      <li>No se puede pasar a <strong>en_reparacion</strong> sin al menos 1 item de presupuesto</li>
+      <li>Presupuesto no editable desde <strong>en_reparacion</strong> en adelante</li>
+      <li><strong>entregado</strong> y <strong>rechazado</strong> son inmutables</li>
+    </ul>
+  </div>
+
+  <div style="flex: 1; min-width: 240px; padding: 14px 16px; background: var(--surface); border-radius: 10px; border-left: 3px solid #f59e0b;">
+    <div class="label" style="color: #f59e0b;">Una orden activa</div>
+    <ul style="margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.9;">
+      <li>Un vehículo solo puede tener 1 orden en estado que no sea <strong>entregado</strong> o <strong>rechazado</strong></li>
+      <li>El buscador por matrícula muestra historial completo (todas las órdenes)</li>
+    </ul>
+  </div>
+
+  <div style="flex: 1; min-width: 240px; padding: 14px 16px; background: var(--surface); border-radius: 10px; border-left: 3px solid #10b981;">
+    <div class="label" style="color: #10b981;">Al entregar</div>
+    <ul style="margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.9;">
+      <li>Se registra <strong>fecha_entrega</strong> en la orden</li>
+      <li>Se genera y descarga PDF de factura con datos del cliente, vehículo, kilometraje y líneas del presupuesto</li>
+    </ul>
+  </div>
+
+</div>

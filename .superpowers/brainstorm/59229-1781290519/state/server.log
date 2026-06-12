@@ -1,0 +1,14 @@
+{"type":"server-started","port":56673,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:56673","screen_dir":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content","state_dir":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/state"}
+{"type":"screen-added","file":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content/data-model.html"}
+{"type":"screen-added","file":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content/data-model-v2.html"}
+{"type":"screen-added","file":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content/data-model-v3.html"}
+{"type":"screen-added","file":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content/state-machine.html"}
+{"type":"screen-added","file":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content/state-machine-v2.html"}
+{"type":"screen-added","file":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content/data-model-v4.html"}
+{"type":"screen-added","file":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content/kanban-mockup.html"}
+{"type":"screen-added","file":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content/kanban-config.html"}
+{"source":"user-event","type":"click","text":"B\n    \n      Página de Ajustes dedicada\n      Enlace \"Ajustes\" en el navbar que lleva a una ruta /ajustes. Página con sección de tarifas, y en el futuro podría albergar más configuraciones del taller (nombre, dirección, logo para PDF...).\n      \n        \n          🔧 TallerGest\n          \n            Kanban\n            Buscador\n            Ajustes\n          \n        \n        \n          Tarifas\n          \n            \n              Tarifa mano de obra (€/h)\n              45,00\n            \n            Guardar\n          \n          \n            Datos del taller (aparecen en PDF)\n            Nombre del taller\n            Taller Mecánico ...","choice":"b","id":null,"timestamp":1781292669576}
+{"type":"screen-added","file":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content/order-detail.html"}
+{"type":"screen-added","file":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content/pdf-layout.html"}
+{"type":"screen-added","file":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content/search-panel.html"}
+{"type":"screen-added","file":"/home/josemix/Escritorio/Tp_DSAI/.superpowers/brainstorm/59229-1781290519/content/search-v2.html"}

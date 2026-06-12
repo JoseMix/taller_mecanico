@@ -1,0 +1,117 @@
+<h2>Modelo de Datos — v4 (final)</h2>
+<p class="subtitle">BudgetItem distingue items de presupuesto vs cobros de cancelación</p>
+
+<div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 16px; align-items: flex-start;">
+
+  <!-- Cliente -->
+  <div style="background: var(--surface); border: 2px solid #10b981; border-radius: 12px; padding: 20px; min-width: 200px;">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #10b981; margin-bottom: 8px; font-weight: 700;">Cliente</div>
+    <div style="font-family: monospace; font-size: 12px; line-height: 2;">
+      <div><span style="color: #f59e0b;">🔑</span> id INTEGER PK</div>
+      <div>nombre TEXT</div>
+      <div>apellido TEXT</div>
+      <div>nif_dni TEXT</div>
+      <div>telefono TEXT</div>
+      <div>email TEXT NULL</div>
+      <div>direccion TEXT</div>
+      <div>localidad TEXT</div>
+      <div>provincia TEXT</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; font-size: 22px; color: var(--muted); padding-top: 10px;">1→N</div>
+
+  <!-- Vehicle -->
+  <div style="background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 20px; min-width: 200px;">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 8px; font-weight: 700;">Vehicle</div>
+    <div style="font-family: monospace; font-size: 12px; line-height: 2;">
+      <div><span style="color: #f59e0b;">🔑</span> id INTEGER PK</div>
+      <div><span style="color: #60a5fa;">🔗</span> cliente_id FK</div>
+      <div>matricula TEXT UNIQUE</div>
+      <div>marca TEXT</div>
+      <div>modelo TEXT</div>
+      <div>año INTEGER</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; font-size: 22px; color: var(--muted); padding-top: 10px;">1→N</div>
+
+  <!-- Order -->
+  <div style="background: var(--surface); border: 2px solid var(--accent); border-radius: 12px; padding: 20px; min-width: 220px;">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 8px; font-weight: 700;">Order</div>
+    <div style="font-family: monospace; font-size: 12px; line-height: 2;">
+      <div><span style="color: #f59e0b;">🔑</span> id INTEGER PK</div>
+      <div>numero_orden TEXT UNIQUE</div>
+      <div><span style="color: #60a5fa;">🔗</span> vehicle_id FK</div>
+      <div>estado TEXT ENUM</div>
+      <div>descripcion TEXT</div>
+      <div>kilometraje INTEGER NULL</div>
+      <div>notas_internas TEXT NULL</div>
+      <div>fecha_entrada DATETIME</div>
+      <div>fecha_actualizacion DATETIME</div>
+      <div>fecha_entrega DATETIME NULL</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; font-size: 22px; color: var(--muted); padding-top: 10px;">1→N</div>
+
+  <!-- BudgetItem -->
+  <div style="background: var(--surface); border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; min-width: 220px;">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #f59e0b; margin-bottom: 8px; font-weight: 700;">BudgetItem</div>
+    <div style="font-family: monospace; font-size: 12px; line-height: 2;">
+      <div><span style="color: #f59e0b;">🔑</span> id INTEGER PK</div>
+      <div><span style="color: #60a5fa;">🔗</span> order_id FK</div>
+      <div>concepto TEXT</div>
+      <div>tipo ENUM</div>
+      <div>cantidad NUMERIC</div>
+      <div>precio_unitario NUMERIC</div>
+      <div style="background: rgba(239,68,68,0.12); border-radius:4px; padding: 1px 4px; color:#ef4444;">es_cargo_cancelacion BOOL</div>
+    </div>
+    <div style="margin-top: 10px; font-size: 11px; color: var(--muted); line-height: 1.7;">
+      <div style="color: #94a3b8;"><code>false</code> → item de presupuesto normal</div>
+      <div style="color: #ef4444;"><code>true</code> → cobro generado al cancelar</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Lógica de cancelación -->
+<div style="margin-top: 28px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; max-width: 860px; margin-left: auto; margin-right: auto;">
+
+  <div style="padding: 12px 14px; background: var(--surface); border-radius: 10px; border-top: 3px solid #3b82f6;">
+    <div class="label" style="color:#3b82f6;">Rechazo desde RECIBIDA</div>
+    <div style="font-size: 12px; margin-top: 6px; line-height: 1.8; color: var(--muted);">
+      No se crean BudgetItems.<br>
+      Orden pasa a rechazado.<br>
+      <strong style="color:#10b981;">Cobro: 0 €</strong>
+    </div>
+  </div>
+
+  <div style="padding: 12px 14px; background: var(--surface); border-radius: 10px; border-top: 3px solid #f59e0b;">
+    <div class="label" style="color:#f59e0b;">Rechazo desde PRESUPUESTADO</div>
+    <div style="font-size: 12px; margin-top: 6px; line-height: 1.8; color: var(--muted);">
+      Backend crea automáticamente 1 BudgetItem<br>
+      <code style="font-size:11px;">es_cargo_cancelacion=true</code><br>
+      concepto: "Cargo por diagnóstico"<br>
+      tipo: mano_obra · cantidad: 0.5 h<br>
+      <strong style="color:#f59e0b;">precio_unitario: tarifa/h del taller</strong>
+    </div>
+  </div>
+
+  <div style="padding: 12px 14px; background: var(--surface); border-radius: 10px; border-top: 3px solid #8b5cf6;">
+    <div class="label" style="color:#8b5cf6;">Rechazo desde EN_REPARACION</div>
+    <div style="font-size: 12px; margin-top: 6px; line-height: 1.8; color: var(--muted);">
+      Mecánico introduce items reales<br>
+      <code style="font-size:11px;">es_cargo_cancelacion=true</code><br>
+      (horas reales + materiales usados)<br>
+      <strong style="color:#8b5cf6;">Los items originales quedan intactos</strong>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top: 16px; padding: 12px 16px; background: var(--surface); border-radius: 10px; border-left: 3px solid var(--accent); max-width: 860px; margin-left: auto; margin-right: auto; font-size: 12px; color: var(--muted); line-height: 1.8;">
+  <strong style="color: var(--fg);">PDF al rechazar:</strong> muestra solo los BudgetItems con <code>es_cargo_cancelacion=true</code>.<br>
+  <strong style="color: var(--fg);">PDF al entregar:</strong> muestra solo los BudgetItems con <code>es_cargo_cancelacion=false</code>.<br>
+  <strong style="color: var(--fg);">Tarifa/hora del taller:</strong> valor configurable guardado en una tabla <code>Config</code> (clave-valor) en SQLite.
+</div>
