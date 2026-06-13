@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Factura {{ orden.numero_orden }}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    color: #222;
+    padding: 30px 40px;
+  }
+
+  /* ---- Accent colours ---- */
+  {% if tipo_factura == "cancelacion" %}
+  :root { --accent: #c0392b; }
+  {% else %}
+  :root { --accent: #1a5276; }
+  {% endif %}
+
+  .accent { color: var(--accent); }
+
+  /* ---- Header ---- */
+  .header {
+    display: table;
+    width: 100%;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+  .header-left  { display: table-cell; width: 60%; vertical-align: top; }
+  .header-right { display: table-cell; width: 40%; vertical-align: top; text-align: right; }
+
+  .taller-name {
+    font-size: 18pt;
+    font-weight: bold;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .taller-meta { font-size: 9pt; color: #555; line-height: 1.5; }
+
+  .factura-title {
+    font-size: 20pt;
+    font-weight: bold;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .factura-meta { font-size: 10pt; color: #333; line-height: 1.8; margin-top: 6px; }
+  .factura-meta strong { color: #111; }
+
+  /* ---- Sections ---- */
+  .section-row {
+    display: table;
+    width: 100%;
+    margin-bottom: 14px;
+  }
+  .section-cell {
+    display: table-cell;
+    width: 50%;
+    vertical-align: top;
+    padding-right: 20px;
+  }
+  .section-cell:last-child { padding-right: 0; }
+
+  .section-title {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: bold;
+    color: #fff;
+    background: var(--accent);
+    padding: 3px 8px;
+    margin-bottom: 6px;
+  }
+  .section-body { font-size: 10pt; line-height: 1.7; padding-left: 8px; }
+  .section-body strong { font-size: 11pt; }
+
+  /* ---- Items table ---- */
+  .items-wrapper { margin-top: 20px; margin-bottom: 16px; }
+
+  table.items {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table.items thead th {
+    background: var(--accent);
+    color: #fff;
+    font-size: 9pt;
+    text-transform: uppercase;
+    padding: 6px 8px;
+    text-align: left;
+  }
+  table.items thead th.num { text-align: right; }
+
+  table.items tbody tr:nth-child(odd)  { background: #f7f9fb; }
+  table.items tbody tr:nth-child(even) { background: #fff; }
+
+  table.items tbody td {
+    padding: 6px 8px;
+    font-size: 10pt;
+    vertical-align: middle;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  table.items tbody td.num { text-align: right; }
+
+  /* ---- Totals ---- */
+  .totals-wrapper {
+    display: table;
+    width: 100%;
+  }
+  .totals-spacer { display: table-cell; width: 55%; }
+  .totals-box    { display: table-cell; width: 45%; }
+
+  table.totals {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table.totals td {
+    padding: 5px 8px;
+    font-size: 10pt;
+    border-bottom: 1px solid #e8e8e8;
+  }
+  table.totals td.label { color: #444; }
+  table.totals td.amount { text-align: right; font-weight: bold; }
+
+  .total-row td {
+    background: var(--accent);
+    color: #fff;
+    font-size: 12pt;
+    font-weight: bold;
+    border-bottom: none;
+  }
+
+  /* ---- Footer ---- */
+  .footer {
+    margin-top: 40px;
+    border-top: 1px solid #ccc;
+    padding-top: 8px;
+    font-size: 8pt;
+    color: #888;
+    text-align: center;
+  }
+
+  /* ---- Cancelacion banner ---- */
+  .cancelacion-banner {
+    background: #fdecea;
+    border: 1px solid #c0392b;
+    border-left: 4px solid #c0392b;
+    color: #c0392b;
+    padding: 8px 14px;
+    font-size: 10pt;
+    font-weight: bold;
+    margin-bottom: 16px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================== HEADER ============================== -->
+<div class="header">
+  <div class="header-left">
+    <div class="taller-name">{{ taller.nombre }}</div>
+    <div class="taller-meta">
+      CIF: {{ taller.cif }}<br/>
+      {{ taller.direccion }}
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="factura-title">
+      {% if tipo_factura == "cancelacion" %}
+        Factura de Cancelación
+      {% else %}
+        Factura
+      {% endif %}
+    </div>
+    <div class="factura-meta">
+      <strong>N.º Orden:</strong> {{ orden.numero_orden }}<br/>
+      <strong>Fecha:</strong> {{ orden.fecha }}
+    </div>
+  </div>
+</div>
+
+<!-- Cancelacion notice -->
+{% if tipo_factura == "cancelacion" %}
+<div class="cancelacion-banner">
+  FACTURA DE CANCELACIÓN — Esta factura corresponde a los cargos generados por la cancelación de la reparación.
+</div>
+{% endif %}
+
+<!-- ============================== CLIENT + VEHICLE ============================== -->
+<div class="section-row">
+  <div class="section-cell">
+    <div class="section-title">Datos del Cliente</div>
+    <div class="section-body">
+      <strong>{{ cliente.apellido }}, {{ cliente.nombre }}</strong><br/>
+      NIF/DNI: {{ cliente.nif_dni }}<br/>
+      {{ cliente.direccion }}<br/>
+      Tel.: {{ cliente.telefono }}
+    </div>
+  </div>
+  <div class="section-cell">
+    <div class="section-title">Vehículo</div>
+    <div class="section-body">
+      <strong>{{ vehiculo.matricula }}</strong><br/>
+      {{ vehiculo.marca }} {{ vehiculo.modelo }} ({{ vehiculo.año }})<br/>
+      {% if vehiculo.kilometraje is not none %}
+      Kilometraje: {{ vehiculo.kilometraje | int }} km
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ============================== ITEMS TABLE ============================== -->
+<div class="items-wrapper">
+  <table class="items">
+    <thead>
+      <tr>
+        <th style="width:45%">Concepto</th>
+        <th style="width:20%">Tipo</th>
+        <th class="num" style="width:10%">Cant.</th>
+        <th class="num" style="width:12%">P. Unit.</th>
+        <th class="num" style="width:13%">Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.concepto }}</td>
+        <td>
+          {% if item.tipo == "mano_obra" %}Mano de obra
+          {% elif item.tipo == "pieza" %}Pieza
+          {% else %}{{ item.tipo }}{% endif %}
+        </td>
+        <td class="num">{{ "%.2f"|format(item.cantidad) }}</td>
+        <td class="num">{{ "%.2f"|format(item.precio_unitario) }} €</td>
+        <td class="num">{{ "%.2f"|format(item.subtotal) }} €</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5" style="text-align:center; color:#999; font-style:italic;">
+          Sin conceptos facturados
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ============================== TOTALS ============================== -->
+<div class="totals-wrapper">
+  <div class="totals-spacer"></div>
+  <div class="totals-box">
+    <table class="totals">
+      <tr>
+        <td class="label">Base imponible</td>
+        <td class="amount">{{ "%.2f"|format(base_imponible) }} €</td>
+      </tr>
+      <tr>
+        <td class="label">IVA ({{ iva_porcentaje }}%)</td>
+        <td class="amount">{{ "%.2f"|format(iva_importe) }} €</td>
+      </tr>
+      <tr class="total-row">
+        <td class="label">TOTAL</td>
+        <td class="amount">{{ "%.2f"|format(total) }} €</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================== FOOTER ============================== -->
+<div class="footer">
+  {{ taller.nombre }} &nbsp;|&nbsp; CIF: {{ taller.cif }} &nbsp;|&nbsp; {{ taller.direccion }}
+</div>
+
+</body>
+</html>
