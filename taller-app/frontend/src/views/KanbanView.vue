@@ -4,6 +4,7 @@ import type { components } from '@/types/api'
 import { useOrdersStore } from '@/stores/orders.store'
 import { usePolling } from '@/composables/usePolling'
 import KanbanBoard from '@/components/KanbanBoard.vue'
+import OrderDetailSheet from '@/components/OrderDetailSheet.vue'
 import { Button } from '@/components/ui/button'
 
 type OrderResumen = components['schemas']['OrderResumen']
@@ -16,15 +17,19 @@ usePolling(() => ordersStore.fetchOrders(), 30_000)
 // Placeholder: NewOrderDialog will be implemented in Task 26
 const showNewOrderDialog = ref(false)
 
-// Placeholder: selected order for OrderDetailSheet (Task 24)
+// Selected order for OrderDetailSheet
 const selectedOrder = ref<OrderResumen | null>(null)
+const sheetOpen = ref(false)
 
 function handleOrderClick(order: OrderResumen) {
   selectedOrder.value = order
+  sheetOpen.value = true
 }
 
-// Task 24: handleCloseDetail will be wired to OrderDetailSheet
-// function handleCloseDetail() { selectedOrder.value = null }
+function handleSheetClose() {
+  sheetOpen.value = false
+  selectedOrder.value = null
+}
 </script>
 
 <template>
@@ -50,7 +55,11 @@ function handleOrderClick(order: OrderResumen) {
     <!-- Placeholder: NewOrderDialog (Task 26) -->
     <!-- <NewOrderDialog v-model:open="showNewOrderDialog" /> -->
 
-    <!-- Placeholder: OrderDetailSheet (Task 24) -->
-    <!-- <OrderDetailSheet :order="selectedOrder" @close="handleCloseDetail" /> -->
+    <!-- OrderDetailSheet -->
+    <OrderDetailSheet
+      v-model:open="sheetOpen"
+      :order="selectedOrder"
+      @close="handleSheetClose"
+    />
   </div>
 </template>
