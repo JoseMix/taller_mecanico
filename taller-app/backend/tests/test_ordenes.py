@@ -83,11 +83,11 @@ def test_create_order(client):
     assert data["numero_orden"] is not None
     # numero_orden format: YYYY-NNN
     assert "-" in data["numero_orden"]
-    assert data["vehicle_id"] == vehicle["id"]
+    assert data["vehiculo_id"] == vehicle["id"]
     assert data["descripcion"] == "Revisión general"
     assert data["kilometraje"] == 50000
-    assert "vehicle" in data
-    assert "cliente" in data["vehicle"]
+    assert "vehiculo" in data
+    assert "cliente" in data["vehiculo"]
     assert isinstance(data["items"], list)
 
 
@@ -135,8 +135,8 @@ def test_get_orden_by_id(client):
     data = resp.json()
     assert data["id"] == order["id"]
     assert "items" in data
-    assert "vehicle" in data
-    assert "cliente" in data["vehicle"]
+    assert "vehiculo" in data
+    assert "cliente" in data["vehiculo"]
 
 
 def test_get_orden_not_found(client):

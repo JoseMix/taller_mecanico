@@ -41,9 +41,10 @@ export function useSearch() {
 
     try {
       if (MATRICULA_RE.test(trimmed)) {
-        vehicleResult.value = await apiGet<VehicleConHistorial>(
+        const results = await apiGet<VehicleConHistorial[]>(
           `/vehiculos/buscar?matricula=${encodeURIComponent(trimmed)}`,
         )
+        vehicleResult.value = results[0] ?? null
       } else if (NIF_DNI_RE.test(trimmed)) {
         clienteResults.value = await apiGet<Cliente[]>(
           `/clientes/buscar?nif_dni=${encodeURIComponent(trimmed)}`,
@@ -54,11 +55,7 @@ export function useSearch() {
         )
       }
     } catch (e: unknown) {
-      if (e instanceof Error && e.message.includes('404')) {
-        // no results — leave arrays empty
-      } else {
-        error.value = e instanceof Error ? e.message : 'Error en la búsqueda'
-      }
+      error.value = e instanceof Error ? e.message : 'Error en la búsqueda'
     } finally {
       loading.value = false
     }

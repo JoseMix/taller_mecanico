@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
 
-from pydantic import BaseModel, ConfigDict, RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 
 # ---------------------------------------------------------------------------
@@ -126,9 +126,12 @@ class OrderUpdate(BaseModel):
 
 
 class OrderResumen(BaseModel):
+    """Lightweight order for Kanban list — no items, has computed total."""
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     numero_orden: str
-    vehicle_id: int
+    vehiculo_id: int = Field(validation_alias="vehicle_id")
     estado: str
     descripcion: str
     kilometraje: Optional[int] = None
@@ -136,15 +139,13 @@ class OrderResumen(BaseModel):
     fecha_entrada: datetime
     fecha_actualizacion: datetime
     fecha_entrega: Optional[datetime] = None
-    items: List[BudgetItemOut] = []
-    vehicle: VehicleConCliente
-
-    model_config = ConfigDict(from_attributes=True)
+    vehiculo: Optional[VehicleConCliente] = Field(default=None, validation_alias="vehicle")
+    total: Optional[float] = None
 
 
 class OrderOut(OrderResumen):
-    # Alias of OrderResumen kept for semantic clarity in route return types.
-    pass
+    """Full order detail including budget items."""
+    items: List[BudgetItemOut] = []
 
 
 class EstadoTransition(BaseModel):

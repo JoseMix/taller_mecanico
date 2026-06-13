@@ -74,6 +74,10 @@ class Order(Base):
         "BudgetItem", back_populates="order", cascade="all, delete-orphan"
     )
 
+    @property
+    def total(self) -> float:
+        return sum(item.cantidad * item.precio_unitario for item in self.items)
+
 
 class BudgetItem(Base):
     __tablename__ = "budget_items"

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.crud import apply_rejection_side_effects, generate_numero_orden, get_active_order_for_vehicle
 from app.database import get_db
 from app.models import BudgetItem, Config, Order, Vehicle
-from app.schemas import EstadoTransition, OrderCreate, OrderResumen, OrderUpdate
+from app.schemas import EstadoTransition, OrderCreate, OrderOut, OrderResumen, OrderUpdate
 from app.state_machine import TERMINAL_STATES, validate_transition
 
 router = APIRouter(prefix="/ordenes", tags=["Ordenes"])
@@ -29,7 +29,7 @@ def _load_order(db: Session, order_id: int) -> Order:
     return order
 
 
-@router.post("", response_model=OrderResumen, status_code=201)
+@router.post("", response_model=OrderOut, status_code=201)
 def create_order(data: OrderCreate, db: Session = Depends(get_db)):
     """Create a new repair order for a vehicle."""
     # Check vehicle exists
@@ -91,13 +91,13 @@ def list_ordenes(db: Session = Depends(get_db)):
     return orders
 
 
-@router.get("/{id}", response_model=OrderResumen)
+@router.get("/{id}", response_model=OrderOut)
 def get_order(id: int, db: Session = Depends(get_db)):
     """Get full order detail including items and vehicle with cliente."""
     return _load_order(db, id)
 
 
-@router.put("/{id}", response_model=OrderResumen)
+@router.put("/{id}", response_model=OrderOut)
 def update_order(id: int, data: OrderUpdate, db: Session = Depends(get_db)):
     """Update editable fields of an order: descripcion, kilometraje, notas_internas."""
     order = db.query(Order).filter(Order.id == id).first()
@@ -136,12 +136,12 @@ def delete_order(id: int, db: Session = Depends(get_db)):
     return Response(status_code=204)
 
 
-@router.patch("/{id}/estado", response_model=OrderResumen)
+@router.patch("/{id}/estado", response_model=OrderOut)
 def cambiar_estado(
     id: int,
     transition: EstadoTransition,
     db: Session = Depends(get_db),
-) -> OrderResumen:
+) -> OrderOut:
     """Transition an order's estado according to the state machine rules."""
     order = db.query(Order).filter(Order.id == id).first()
     if not order:
