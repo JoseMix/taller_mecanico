@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gen:types": "openapi-typescript ../openapi/spec.yaml -o src/types/api.ts"
   },
   "dependencies": {
     "@lucide/vue": "^1.18.0",
