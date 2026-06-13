@@ -1,0 +1,1034 @@
+openapi: 3.1.0
+
+info:
+  title: Taller Mecánico API
+  version: 1.0.0
+  description: >
+    API de gestión de taller mecánico. Soporta clientes, vehículos,
+    órdenes de trabajo con máquina de estados, presupuestos, generación
+    de PDF y configuración del taller.
+
+servers:
+  - url: http://localhost:8000
+    description: Servidor de desarrollo local
+
+# ---------------------------------------------------------------------------
+# PATHS
+# ---------------------------------------------------------------------------
+paths:
+
+  # ─────────────────────────── CLIENTES ────────────────────────────────────
+
+  /clientes:
+    get:
+      summary: Listar clientes
+      operationId: list_clientes
+      tags: [Clientes]
+      parameters:
+        - name: q
+          in: query
+          required: false
+          description: Búsqueda por nombre o apellido (parcial, case-insensitive)
+          schema:
+            type: string
+            example: García
+      responses:
+        "200":
+          description: Lista de clientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cliente"
+
+    post:
+      summary: Crear cliente
+      operationId: create_cliente
+      tags: [Clientes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClienteCreate"
+      responses:
+        "201":
+          description: Cliente creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cliente"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/BusinessRuleError"
+
+  /clientes/buscar:
+    get:
+      summary: Buscar clientes por apellido (parcial) o NIF/DNI (exacto)
+      operationId: buscar_clientes
+      tags: [Clientes]
+      parameters:
+        - name: apellido
+          in: query
+          required: false
+          description: Búsqueda parcial case-insensitive por apellido
+          schema:
+            type: string
+            example: Rodríguez
+        - name: nif_dni
+          in: query
+          required: false
+          description: Búsqueda exacta por NIF o DNI
+          schema:
+            type: string
+            example: 12345678A
+      responses:
+        "200":
+          description: Lista de clientes que coinciden con la búsqueda
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cliente"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /clientes/{id}:
+    get:
+      summary: Obtener cliente con sus vehículos
+      operationId: get_cliente
+      tags: [Clientes]
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Detalle del cliente con vehículos asociados
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClienteConVehiculos"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    put:
+      summary: Actualizar cliente
+      operationId: update_cliente
+      tags: [Clientes]
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClienteUpdate"
+      responses:
+        "200":
+          description: Cliente actualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cliente"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRuleError"
+
+  # ─────────────────────────── VEHÍCULOS ───────────────────────────────────
+
+  /vehiculos:
+    post:
+      summary: Crear vehículo (requiere cliente_id)
+      operationId: create_vehiculo
+      tags: [Vehículos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VehicleCreate"
+      responses:
+        "201":
+          description: Vehículo creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          description: Cliente no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+        "422":
+          $ref: "#/components/responses/BusinessRuleError"
+
+  /vehiculos/buscar:
+    get:
+      summary: Buscar vehículo por matrícula
+      operationId: buscar_vehiculo
+      tags: [Vehículos]
+      parameters:
+        - name: matricula
+          in: query
+          required: true
+          description: Matrícula exacta (case-insensitive)
+          schema:
+            type: string
+            example: 1234ABC
+      responses:
+        "200":
+          description: Vehículo con historial de órdenes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehicleConHistorial"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /vehiculos/{id}:
+    get:
+      summary: Obtener vehículo con historial de órdenes
+      operationId: get_vehiculo
+      tags: [Vehículos]
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Detalle del vehículo con historial completo de órdenes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehicleConHistorial"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ─────────────────────────── ÓRDENES ─────────────────────────────────────
+
+  /ordenes:
+    get:
+      summary: Listar órdenes para el tablero Kanban
+      operationId: list_ordenes
+      tags: [Órdenes]
+      description: >
+        Devuelve las órdenes en estados no terminales (recibida, presupuestado,
+        en_reparacion, finalizada) más las órdenes en estados terminales
+        (entregado, rechazado) de los últimos 7 días.
+      responses:
+        "200":
+          description: Lista de órdenes para el Kanban
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrderResumen"
+
+    post:
+      summary: Crear orden de trabajo (requiere vehiculo_id)
+      operationId: create_orden
+      tags: [Órdenes]
+      description: >
+        Crea una nueva orden en estado `recibida`. Solo puede existir una
+        orden activa (no terminal) por vehículo a la vez.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderCreate"
+      responses:
+        "201":
+          description: Orden creada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          description: Vehículo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+        "422":
+          $ref: "#/components/responses/BusinessRuleError"
+
+  /ordenes/{id}:
+    get:
+      summary: Obtener detalle completo de una orden (con items)
+      operationId: get_orden
+      tags: [Órdenes]
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Orden completa con items de presupuesto
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    put:
+      summary: Actualizar campos editables de la orden
+      operationId: update_orden
+      tags: [Órdenes]
+      description: >
+        Solo edita `descripcion`, `kilometraje` y `notas_internas`.
+        No puede modificar órdenes en estados terminales.
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderUpdate"
+      responses:
+        "200":
+          description: Orden actualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRuleError"
+
+    delete:
+      summary: Eliminar orden (solo si estado = recibida)
+      operationId: delete_orden
+      tags: [Órdenes]
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "204":
+          description: Orden eliminada correctamente
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRuleError"
+
+  /ordenes/{id}/estado:
+    patch:
+      summary: Cambiar estado de la orden
+      operationId: cambiar_estado_orden
+      tags: [Órdenes]
+      description: >
+        Valida la transición según la máquina de estados.
+        Al rechazar desde `presupuestado`, el backend crea automáticamente
+        un BudgetItem de diagnóstico (30 min a tarifa_hora).
+        Al rechazar desde `en_reparacion`, se deben enviar los items de
+        cancelación en el cuerpo.
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EstadoTransition"
+      responses:
+        "200":
+          description: Estado actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRuleError"
+
+  # ─────────────────────────── ITEMS PRESUPUESTO ───────────────────────────
+
+  /ordenes/{id}/items:
+    post:
+      summary: Añadir item al presupuesto de la orden
+      operationId: add_item
+      tags: [Items]
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetItemCreate"
+      responses:
+        "201":
+          description: Item añadido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetItem"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRuleError"
+
+  /ordenes/{id}/items/{item_id}:
+    put:
+      summary: Editar item del presupuesto
+      operationId: update_item
+      tags: [Items]
+      description: >
+        Los items con `es_cargo_cancelacion=false` no son editables cuando
+        el estado de la orden es `en_reparacion`, `finalizada`, `entregado`
+        o `rechazado`.
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 42
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetItemUpdate"
+      responses:
+        "200":
+          description: Item actualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetItem"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRuleError"
+
+    delete:
+      summary: Eliminar item del presupuesto
+      operationId: delete_item
+      tags: [Items]
+      description: >
+        Los items con `es_cargo_cancelacion=false` no son eliminables cuando
+        el estado de la orden es `en_reparacion`, `finalizada`, `entregado`
+        o `rechazado`.
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 42
+      responses:
+        "204":
+          description: Item eliminado correctamente
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRuleError"
+
+  # ─────────────────────────── PDF ─────────────────────────────────────────
+
+  /ordenes/{id}/pdf:
+    get:
+      summary: Descargar PDF de la orden (factura o factura de cancelación)
+      operationId: get_orden_pdf
+      tags: [PDF]
+      description: >
+        Genera y devuelve el PDF correspondiente a la orden.
+        Si el estado es `entregado` genera la factura normal (items normales + IVA 21%).
+        Si el estado es `rechazado` genera la factura de cancelación
+        (items de cancelación + IVA 21%).
+        Solo disponible para estados terminales (`entregado` o `rechazado`).
+      parameters:
+        - $ref: "#/components/parameters/PathId"
+      responses:
+        "200":
+          description: Fichero PDF generado
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              description: Nombre del fichero descargado
+              schema:
+                type: string
+                example: attachment; filename="factura-2026-001.pdf"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/BusinessRuleError"
+
+  # ─────────────────────────── CONFIG ──────────────────────────────────────
+
+  /config:
+    get:
+      summary: Obtener configuración del taller
+      operationId: get_config
+      tags: [Config]
+      responses:
+        "200":
+          description: Mapa clave-valor con la configuración actual
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigMap"
+              example:
+                tarifa_hora: "45.00"
+                nombre_taller: "Taller García"
+                cif_taller: "B12345678"
+                direccion_taller: "Calle Mayor 1, Madrid"
+
+    put:
+      summary: Actualizar configuración del taller
+      operationId: update_config
+      tags: [Config]
+      description: >
+        Hace upsert de cada clave recibida. Las claves no incluidas
+        en el cuerpo no se modifican.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfigMap"
+            example:
+              tarifa_hora: "50.00"
+              nombre_taller: "Taller García e Hijos"
+      responses:
+        "200":
+          description: Configuración actualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigMap"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/BusinessRuleError"
+
+# ---------------------------------------------------------------------------
+# COMPONENTS
+# ---------------------------------------------------------------------------
+components:
+
+  # ─────────────────────────── PARAMETERS ──────────────────────────────────
+
+  parameters:
+    PathId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        example: 1
+
+  # ─────────────────────────── RESPONSES ───────────────────────────────────
+
+  responses:
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorDetail"
+          example:
+            detail: "Recurso no encontrado"
+
+    BadRequest:
+      description: Petición inválida
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorDetail"
+          example:
+            detail: "Datos de entrada inválidos"
+
+    BusinessRuleError:
+      description: Violación de regla de negocio
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorDetail"
+          example:
+            detail: "No se puede cambiar el estado de una orden en estado terminal"
+
+  # ─────────────────────────── SCHEMAS ─────────────────────────────────────
+
+  schemas:
+
+    # ── Error ──────────────────────────────────────────────────────────────
+
+    ErrorDetail:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          type: string
+          description: Mensaje descriptivo del error
+          example: "No se puede eliminar una orden que no está en estado 'recibida'"
+
+    # ── Enums ──────────────────────────────────────────────────────────────
+
+    EstadoOrden:
+      type: string
+      enum:
+        - recibida
+        - presupuestado
+        - en_reparacion
+        - finalizada
+        - entregado
+        - rechazado
+      example: recibida
+
+    TipoItem:
+      type: string
+      enum:
+        - mano_obra
+        - pieza
+      example: mano_obra
+
+    # ── Cliente ────────────────────────────────────────────────────────────
+
+    ClienteBase:
+      type: object
+      required:
+        - nombre
+        - apellido
+        - nif_dni
+        - telefono
+        - direccion
+        - localidad
+        - provincia
+      properties:
+        nombre:
+          type: string
+          example: Juan
+        apellido:
+          type: string
+          example: García López
+        nif_dni:
+          type: string
+          example: 12345678A
+        telefono:
+          type: string
+          example: "612345678"
+        email:
+          type: ["string", "null"]
+          format: email
+          example: juan.garcia@email.com
+        direccion:
+          type: string
+          example: Calle Mayor 15, 2ºA
+        localidad:
+          type: string
+          example: Madrid
+        provincia:
+          type: string
+          example: Madrid
+
+    ClienteCreate:
+      allOf:
+        - $ref: "#/components/schemas/ClienteBase"
+
+    ClienteUpdate:
+      type: object
+      description: Todos los campos son opcionales en la actualización
+      properties:
+        nombre:
+          type: string
+          example: Juan
+        apellido:
+          type: string
+          example: García López
+        nif_dni:
+          type: string
+          example: 12345678A
+        telefono:
+          type: string
+          example: "612345678"
+        email:
+          type: ["string", "null"]
+          format: email
+          example: juan.garcia@email.com
+        direccion:
+          type: string
+          example: Calle Mayor 15, 2ºA
+        localidad:
+          type: string
+          example: Madrid
+        provincia:
+          type: string
+          example: Madrid
+
+    Cliente:
+      allOf:
+        - $ref: "#/components/schemas/ClienteBase"
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: integer
+              example: 1
+
+    ClienteConVehiculos:
+      allOf:
+        - $ref: "#/components/schemas/Cliente"
+        - type: object
+          required: [vehiculos]
+          properties:
+            vehiculos:
+              type: array
+              items:
+                $ref: "#/components/schemas/Vehicle"
+
+    # ── Vehicle ────────────────────────────────────────────────────────────
+
+    VehicleBase:
+      type: object
+      required:
+        - cliente_id
+        - matricula
+        - marca
+        - modelo
+        - año
+      properties:
+        cliente_id:
+          type: integer
+          example: 1
+        matricula:
+          type: string
+          example: 1234ABC
+        marca:
+          type: string
+          example: Seat
+        modelo:
+          type: string
+          example: León
+        año:
+          type: integer
+          minimum: 1900
+          maximum: 2100
+          example: 2019
+
+    VehicleCreate:
+      allOf:
+        - $ref: "#/components/schemas/VehicleBase"
+
+    Vehicle:
+      allOf:
+        - $ref: "#/components/schemas/VehicleBase"
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: integer
+              example: 1
+
+    VehicleConHistorial:
+      allOf:
+        - $ref: "#/components/schemas/Vehicle"
+        - type: object
+          required: [cliente, ordenes]
+          properties:
+            cliente:
+              $ref: "#/components/schemas/Cliente"
+            ordenes:
+              type: array
+              items:
+                $ref: "#/components/schemas/OrderResumen"
+
+    # ── Order ──────────────────────────────────────────────────────────────
+
+    OrderBase:
+      type: object
+      required:
+        - vehiculo_id
+        - descripcion
+      properties:
+        vehiculo_id:
+          type: integer
+          example: 1
+        descripcion:
+          type: string
+          example: El motor hace un ruido extraño al arrancar en frío
+        kilometraje:
+          type: ["integer", "null"]
+          minimum: 0
+          example: 85000
+        notas_internas:
+          type: ["string", "null"]
+          example: Revisar también el aceite porque el cliente mencionó consumo elevado
+
+    OrderCreate:
+      allOf:
+        - $ref: "#/components/schemas/OrderBase"
+
+    OrderUpdate:
+      type: object
+      description: Solo se pueden editar descripcion, kilometraje y notas_internas
+      properties:
+        descripcion:
+          type: string
+          example: El motor hace un ruido extraño al arrancar en frío
+        kilometraje:
+          type: ["integer", "null"]
+          minimum: 0
+          example: 85000
+        notas_internas:
+          type: ["string", "null"]
+          example: Revisar también el aceite
+
+    Order:
+      type: object
+      required:
+        - id
+        - numero_orden
+        - vehiculo_id
+        - estado
+        - descripcion
+        - fecha_entrada
+        - fecha_actualizacion
+        - items
+      properties:
+        id:
+          type: integer
+          example: 1
+        numero_orden:
+          type: string
+          pattern: "^\\d{4}-\\d{3}$"
+          example: 2026-001
+        vehiculo_id:
+          type: integer
+          example: 1
+        estado:
+          $ref: "#/components/schemas/EstadoOrden"
+        descripcion:
+          type: string
+          example: El motor hace un ruido extraño al arrancar en frío
+        kilometraje:
+          type: ["integer", "null"]
+          minimum: 0
+          example: 85000
+        notas_internas:
+          type: ["string", "null"]
+          example: Revisar también el aceite
+        fecha_entrada:
+          type: string
+          format: date-time
+          example: "2026-06-13T09:30:00"
+        fecha_actualizacion:
+          type: string
+          format: date-time
+          example: "2026-06-13T14:00:00"
+        fecha_entrega:
+          type: ["string", "null"]
+          format: date-time
+          example: "2026-06-14T17:00:00"
+        vehiculo:
+          $ref: "#/components/schemas/VehicleConCliente"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BudgetItem"
+        total:
+          type: number
+          format: float
+          description: "Suma de cantidad × precio_unitario de todos los items (calculado en runtime)"
+          example: 285.50
+
+    OrderResumen:
+      type: object
+      required:
+        - id
+        - numero_orden
+        - vehiculo_id
+        - estado
+        - descripcion
+        - fecha_entrada
+        - fecha_actualizacion
+      description: Versión resumida de la orden para el Kanban (sin items detallados)
+      properties:
+        id:
+          type: integer
+          example: 1
+        numero_orden:
+          type: string
+          pattern: "^\\d{4}-\\d{3}$"
+          example: 2026-001
+        vehiculo_id:
+          type: integer
+          example: 1
+        estado:
+          $ref: "#/components/schemas/EstadoOrden"
+        descripcion:
+          type: string
+          example: El motor hace un ruido extraño al arrancar en frío
+        kilometraje:
+          type: ["integer", "null"]
+          minimum: 0
+          example: 85000
+        notas_internas:
+          type: ["string", "null"]
+          example: null
+        fecha_entrada:
+          type: string
+          format: date-time
+          example: "2026-06-13T09:30:00"
+        fecha_actualizacion:
+          type: string
+          format: date-time
+          example: "2026-06-13T14:00:00"
+        fecha_entrega:
+          type: ["string", "null"]
+          format: date-time
+          example: null
+        vehiculo:
+          $ref: "#/components/schemas/VehicleConCliente"
+        total:
+          type: number
+          format: float
+          description: "Total del presupuesto calculado en runtime"
+          example: 285.50
+
+    EstadoTransition:
+      type: object
+      required: [estado]
+      properties:
+        estado:
+          $ref: "#/components/schemas/EstadoOrden"
+        items_cancelacion:
+          type: array
+          description: >
+            Solo requerido al rechazar desde `en_reparacion`.
+            Lista de items reales de cancelación (se guardan con es_cargo_cancelacion=true).
+          items:
+            $ref: "#/components/schemas/BudgetItemCreate"
+
+    # ── BudgetItem ─────────────────────────────────────────────────────────
+
+    BudgetItemBase:
+      type: object
+      required:
+        - concepto
+        - tipo
+        - cantidad
+        - precio_unitario
+      properties:
+        concepto:
+          type: string
+          example: Cambio de filtro de aceite
+        tipo:
+          $ref: "#/components/schemas/TipoItem"
+        cantidad:
+          type: number
+          format: float
+          minimum: 0
+          example: 1.5
+        precio_unitario:
+          type: number
+          format: float
+          minimum: 0
+          example: 45.00
+        es_cargo_cancelacion:
+          type: boolean
+          default: false
+          example: false
+
+    BudgetItemCreate:
+      allOf:
+        - $ref: "#/components/schemas/BudgetItemBase"
+
+    BudgetItemUpdate:
+      type: object
+      description: Todos los campos son opcionales en la actualización
+      properties:
+        concepto:
+          type: string
+          example: Cambio de filtro de aceite
+        tipo:
+          $ref: "#/components/schemas/TipoItem"
+        cantidad:
+          type: number
+          format: float
+          minimum: 0
+          example: 2.0
+        precio_unitario:
+          type: number
+          format: float
+          minimum: 0
+          example: 45.00
+
+    BudgetItem:
+      allOf:
+        - $ref: "#/components/schemas/BudgetItemBase"
+        - type: object
+          required: [id, order_id]
+          properties:
+            id:
+              type: integer
+              example: 1
+            order_id:
+              type: integer
+              example: 1
+            subtotal:
+              type: number
+              format: float
+              description: "cantidad × precio_unitario (calculado en runtime)"
+              example: 67.50
+
+    # ── Vehículo con cliente (embebido en orden) ───────────────────────────
+
+    VehicleConCliente:
+      allOf:
+        - $ref: "#/components/schemas/Vehicle"
+        - type: object
+          required: [cliente]
+          properties:
+            cliente:
+              $ref: "#/components/schemas/Cliente"
+
+    # ── Config ─────────────────────────────────────────────────────────────
+
+    ConfigMap:
+      type: object
+      description: >
+        Mapa clave-valor de la configuración del taller.
+        Claves conocidas: tarifa_hora, nombre_taller, cif_taller, direccion_taller.
+        El valor siempre se almacena como texto.
+      additionalProperties:
+        type: string
+      example:
+        tarifa_hora: "45.00"
+        nombre_taller: "Taller García"
+        cif_taller: "B12345678"
+        direccion_taller: "Calle Mayor 1, Madrid"
+
+# ---------------------------------------------------------------------------
+# TAGS
+# ---------------------------------------------------------------------------
+tags:
+  - name: Clientes
+    description: Gestión de clientes del taller
+  - name: Vehículos
+    description: Gestión de vehículos de los clientes
+  - name: Órdenes
+    description: Órdenes de trabajo y su máquina de estados
+  - name: Items
+    description: Items de presupuesto de las órdenes
+  - name: PDF
+    description: Generación de PDF de facturas
+  - name: Config
+    description: Configuración del taller
