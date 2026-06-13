@@ -4,11 +4,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session, joinedload
 
-from app.crud import generate_numero_orden, get_active_order_for_vehicle
+from app.crud import apply_rejection_side_effects, generate_numero_orden, get_active_order_for_vehicle
 from app.database import get_db
-from app.models import Order, Vehicle
-from app.schemas import OrderCreate, OrderResumen, OrderUpdate
-from app.state_machine import TERMINAL_STATES
+from app.models import BudgetItem, Config, Order, Vehicle
+from app.schemas import EstadoTransition, OrderCreate, OrderResumen, OrderUpdate
+from app.state_machine import TERMINAL_STATES, validate_transition
 
 router = APIRouter(prefix="/ordenes", tags=["Ordenes"])
 
@@ -134,3 +134,68 @@ def delete_order(id: int, db: Session = Depends(get_db)):
     db.delete(order)
     db.commit()
     return Response(status_code=204)
+
+
+@router.patch("/{id}/estado", response_model=OrderResumen)
+def cambiar_estado(
+    id: int,
+    transition: EstadoTransition,
+    db: Session = Depends(get_db),
+) -> OrderResumen:
+    """Transition an order's estado according to the state machine rules."""
+    order = db.query(Order).filter(Order.id == id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Orden no encontrada.")
+
+    nuevo_estado = transition.nuevo_estado
+
+    # Step 1: validate the transition (raises 422 on invalid)
+    validate_transition(order.estado, nuevo_estado)
+
+    # Step 2: entering en_reparacion requires at least 1 non-cancellation item
+    if nuevo_estado == "en_reparacion":
+        has_item = (
+            db.query(BudgetItem)
+            .filter(
+                BudgetItem.order_id == id,
+                BudgetItem.es_cargo_cancelacion == False,  # noqa: E712
+            )
+            .first()
+        )
+        if not has_item:
+            raise HTTPException(
+                status_code=422,
+                detail="Se requiere al menos un item de presupuesto para pasar a en_reparacion",
+            )
+
+    # Step 3: entering rechazado
+    if nuevo_estado == "rechazado":
+        # Save manual cancellation items (en_reparacion → rechazado path)
+        if transition.items_cancelacion:
+            for item_data in transition.items_cancelacion:
+                item = BudgetItem(
+                    order_id=id,
+                    concepto=item_data.concepto,
+                    tipo=item_data.tipo,
+                    cantidad=item_data.cantidad,
+                    precio_unitario=item_data.precio_unitario,
+                    es_cargo_cancelacion=True,
+                )
+                db.add(item)
+
+        # Apply automatic side effects (presupuestado → rechazado auto-creates diagnostic charge)
+        config_rows = db.query(Config).all()
+        config = {row.clave: row.valor for row in config_rows}
+        apply_rejection_side_effects(db, order, config)
+
+    # Step 4: set fecha_entrega when delivering
+    if nuevo_estado == "entregado":
+        order.fecha_entrega = datetime.now(timezone.utc)
+
+    # Step 5: apply state change
+    order.estado = nuevo_estado
+    order.fecha_actualizacion = datetime.now(timezone.utc)
+    db.commit()
+
+    # Step 6: return updated order with relationships loaded
+    return _load_order(db, order.id)

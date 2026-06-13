@@ -289,3 +289,221 @@ def test_numero_orden_increments(client):
     year = str(datetime.now(timezone.utc).year)
     assert order1["numero_orden"].startswith(year)
     assert order2["numero_orden"].startswith(year)
+
+
+# ---------------------------------------------------------------------------
+# Estado transition tests (Task 13)
+# ---------------------------------------------------------------------------
+
+
+def _transition(client, order_id, nuevo_estado, items_cancelacion=None):
+    """PATCH /ordenes/{id}/estado and return the response."""
+    payload = {"nuevo_estado": nuevo_estado}
+    if items_cancelacion is not None:
+        payload["items_cancelacion"] = items_cancelacion
+    return client.patch(f"/ordenes/{order_id}/estado", json=payload)
+
+
+def _add_budget_item(db, order_id, concepto="Mano de obra", tipo="mano_obra",
+                     cantidad=1, precio_unitario=45, es_cargo_cancelacion=False):
+    """Helper to insert a BudgetItem directly into the test DB."""
+    from app.models import BudgetItem
+    item = BudgetItem(
+        order_id=order_id,
+        concepto=concepto,
+        tipo=tipo,
+        cantidad=cantidad,
+        precio_unitario=precio_unitario,
+        es_cargo_cancelacion=es_cargo_cancelacion,
+    )
+    db.add(item)
+    db.commit()
+    return item
+
+
+def test_happy_path_full_transition(client, db):
+    """recibida → presupuestado → en_reparacion → finalizada → entregado"""
+    _, vehicle = _setup(client, cliente_overrides={"nif_dni": "HH111111H"},
+                        vehicle_overrides={"matricula": "HH0001AA"})
+    order = _create_order(client, vehicle["id"]).json()
+    order_id = order["id"]
+
+    # recibida → presupuestado
+    resp = _transition(client, order_id, "presupuestado")
+    assert resp.status_code == 200, resp.json()
+    assert resp.json()["estado"] == "presupuestado"
+
+    # Add a non-cancellation item so en_reparacion transition is allowed
+    _add_budget_item(db, order_id)
+
+    # presupuestado → en_reparacion
+    resp = _transition(client, order_id, "en_reparacion")
+    assert resp.status_code == 200, resp.json()
+    assert resp.json()["estado"] == "en_reparacion"
+
+    # en_reparacion → finalizada
+    resp = _transition(client, order_id, "finalizada")
+    assert resp.status_code == 200, resp.json()
+    assert resp.json()["estado"] == "finalizada"
+
+    # finalizada → entregado
+    resp = _transition(client, order_id, "entregado")
+    assert resp.status_code == 200, resp.json()
+    data = resp.json()
+    assert data["estado"] == "entregado"
+
+
+def test_transition_to_en_reparacion_requires_budget_item(client, db):
+    """Cannot go to en_reparacion without a non-cancellation budget item → 422"""
+    _, vehicle = _setup(client, cliente_overrides={"nif_dni": "RR222222R"},
+                        vehicle_overrides={"matricula": "RR0002BB"})
+    order = _create_order(client, vehicle["id"]).json()
+    order_id = order["id"]
+
+    # Advance to presupuestado first
+    _transition(client, order_id, "presupuestado")
+
+    # No budget items → should fail
+    resp = _transition(client, order_id, "en_reparacion")
+    assert resp.status_code == 422
+    assert "presupuesto" in resp.json()["detail"].lower()
+
+    # Add only a cancellation item → should still fail
+    _add_budget_item(db, order_id, es_cargo_cancelacion=True)
+    resp = _transition(client, order_id, "en_reparacion")
+    assert resp.status_code == 422
+
+    # Add a real non-cancellation item → should succeed
+    _add_budget_item(db, order_id, concepto="Trabajo real", es_cargo_cancelacion=False)
+    resp = _transition(client, order_id, "en_reparacion")
+    assert resp.status_code == 200
+    assert resp.json()["estado"] == "en_reparacion"
+
+
+def test_reject_from_recibida_no_charge(client, db):
+    """recibida → rechazado: no BudgetItems created"""
+    _, vehicle = _setup(client, cliente_overrides={"nif_dni": "RC333333C"},
+                        vehicle_overrides={"matricula": "RC0003CC"})
+    order = _create_order(client, vehicle["id"]).json()
+    order_id = order["id"]
+
+    resp = _transition(client, order_id, "rechazado")
+    assert resp.status_code == 200, resp.json()
+    data = resp.json()
+    assert data["estado"] == "rechazado"
+    # No items should have been created
+    assert data["items"] == []
+
+
+def test_reject_from_presupuestado_auto_charge(client, db):
+    """presupuestado → rechazado: backend auto-creates diagnostic BudgetItem with es_cargo_cancelacion=True"""
+    _, vehicle = _setup(client, cliente_overrides={"nif_dni": "RP444444P"},
+                        vehicle_overrides={"matricula": "RP0004PP"})
+    order = _create_order(client, vehicle["id"]).json()
+    order_id = order["id"]
+
+    # Advance to presupuestado
+    _transition(client, order_id, "presupuestado")
+
+    # Reject — no items_cancelacion provided
+    resp = _transition(client, order_id, "rechazado")
+    assert resp.status_code == 200, resp.json()
+    data = resp.json()
+    assert data["estado"] == "rechazado"
+
+    # Should have exactly one auto-created cancellation item
+    items = data["items"]
+    assert len(items) == 1
+    item = items[0]
+    assert item["es_cargo_cancelacion"] is True
+    assert item["concepto"] == "Cargo por diagnóstico"
+    assert item["tipo"] == "mano_obra"
+    assert item["cantidad"] == 0.5
+    # tarifa_hora is seeded as "45" in conftest
+    assert item["precio_unitario"] == 45.0
+
+
+def test_reject_from_en_reparacion_with_items(client, db):
+    """en_reparacion → rechazado with items_cancelacion: items saved with es_cargo_cancelacion=True"""
+    _, vehicle = _setup(client, cliente_overrides={"nif_dni": "RE555555E"},
+                        vehicle_overrides={"matricula": "RE0005EE"})
+    order = _create_order(client, vehicle["id"]).json()
+    order_id = order["id"]
+
+    # recibida → presupuestado
+    _transition(client, order_id, "presupuestado")
+    # Add non-cancellation item for en_reparacion gate
+    _add_budget_item(db, order_id)
+    # presupuestado → en_reparacion
+    _transition(client, order_id, "en_reparacion")
+
+    # en_reparacion → rechazado with manual cancellation items
+    cancelacion_items = [
+        {"concepto": "Desmontaje", "tipo": "mano_obra", "cantidad": 2,
+         "precio_unitario": 45, "es_cargo_cancelacion": False},
+        {"concepto": "Pieza usada", "tipo": "pieza", "cantidad": 1,
+         "precio_unitario": 30, "es_cargo_cancelacion": False},
+    ]
+    resp = _transition(client, order_id, "rechazado", items_cancelacion=cancelacion_items)
+    assert resp.status_code == 200, resp.json()
+    data = resp.json()
+    assert data["estado"] == "rechazado"
+
+    # Should have: 1 original item + 2 cancellation items (no auto-charge from presupuestado)
+    items = data["items"]
+    cancelacion = [i for i in items if i["es_cargo_cancelacion"]]
+    assert len(cancelacion) == 2, f"Expected 2 cancellation items, got {len(cancelacion)}: {items}"
+    for i in cancelacion:
+        assert i["es_cargo_cancelacion"] is True
+
+
+def test_terminal_state_cannot_transition(client, db):
+    """entregado → presupuestado returns 422"""
+    _, vehicle = _setup(client, cliente_overrides={"nif_dni": "TE666666T"},
+                        vehicle_overrides={"matricula": "TE0006TT"})
+    order = _create_order(client, vehicle["id"]).json()
+    order_id = order["id"]
+
+    # Advance all the way to entregado
+    _transition(client, order_id, "presupuestado")
+    _add_budget_item(db, order_id)
+    _transition(client, order_id, "en_reparacion")
+    _transition(client, order_id, "finalizada")
+    _transition(client, order_id, "entregado")
+
+    # Try to go backwards — must fail
+    resp = _transition(client, order_id, "presupuestado")
+    assert resp.status_code == 422
+    assert "entregado" in resp.json()["detail"].lower()
+
+    # Also rechazado → presupuestado should fail
+    _, vehicle2 = _setup(client, cliente_overrides={"nif_dni": "TE777777T"},
+                         vehicle_overrides={"matricula": "TE0007TT"})
+    order2 = _create_order(client, vehicle2["id"]).json()
+    order2_id = order2["id"]
+    _transition(client, order2_id, "rechazado")
+    resp2 = _transition(client, order2_id, "presupuestado")
+    assert resp2.status_code == 422
+
+
+def test_fecha_entrega_set_on_entregado(client, db):
+    """fecha_entrega is set when transitioning to entregado"""
+    _, vehicle = _setup(client, cliente_overrides={"nif_dni": "FE888888F"},
+                        vehicle_overrides={"matricula": "FE0008FF"})
+    order = _create_order(client, vehicle["id"]).json()
+    order_id = order["id"]
+
+    # No fecha_entrega at creation
+    assert order["fecha_entrega"] is None
+
+    # Advance to entregado
+    _transition(client, order_id, "presupuestado")
+    _add_budget_item(db, order_id)
+    _transition(client, order_id, "en_reparacion")
+    _transition(client, order_id, "finalizada")
+    resp = _transition(client, order_id, "entregado")
+
+    assert resp.status_code == 200, resp.json()
+    data = resp.json()
+    assert data["estado"] == "entregado"
+    assert data["fecha_entrega"] is not None
