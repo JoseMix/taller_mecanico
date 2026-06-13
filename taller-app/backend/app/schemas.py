@@ -76,7 +76,6 @@ class ClienteOut(ClienteBase):
 # ---------------------------------------------------------------------------
 
 class VehicleBase(BaseModel):
-    cliente_id: int
     matricula: str
     marca: str
     modelo: str
@@ -84,11 +83,12 @@ class VehicleBase(BaseModel):
 
 
 class VehicleCreate(VehicleBase):
-    pass
+    cliente_id: int
 
 
 class VehicleOut(VehicleBase):
     id: int
+    cliente_id: int
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -143,6 +143,7 @@ class OrderResumen(BaseModel):
 
 
 class OrderOut(OrderResumen):
+    # Alias of OrderResumen kept for semantic clarity in route return types.
     pass
 
 
@@ -190,11 +191,8 @@ class ConfigMap(RootModel[dict[str, str]]):
 # Rebuild models with forward references
 # ---------------------------------------------------------------------------
 
-ClienteOut.model_rebuild()
 ClienteConVehiculos.model_rebuild()
-VehicleOut.model_rebuild()
 VehicleConCliente.model_rebuild()
 VehicleConHistorial.model_rebuild()
 OrderResumen.model_rebuild()
 OrderOut.model_rebuild()
-BudgetItemOut.model_rebuild()

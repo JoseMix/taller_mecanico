@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 
 from sqlalchemy import ForeignKey, String, Integer, Float, Boolean, DateTime, func
@@ -7,13 +7,17 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
 
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 class Cliente(Base):
     __tablename__ = "clientes"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     nombre: Mapped[str] = mapped_column(String, nullable=False)
     apellido: Mapped[str] = mapped_column(String, nullable=False)
-    nif_dni: Mapped[str] = mapped_column(String, nullable=False)
+    nif_dni: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     telefono: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     direccion: Mapped[str] = mapped_column(String, nullable=False)
@@ -21,7 +25,7 @@ class Cliente(Base):
     provincia: Mapped[str] = mapped_column(String, nullable=False)
 
     vehiculos: Mapped[List["Vehicle"]] = relationship(
-        "Vehicle", back_populates="cliente"
+        "Vehicle", back_populates="cliente", cascade="all, delete-orphan"
     )
 
 
@@ -39,7 +43,7 @@ class Vehicle(Base):
 
     cliente: Mapped["Cliente"] = relationship("Cliente", back_populates="vehiculos")
     ordenes: Mapped[List["Order"]] = relationship(
-        "Order", back_populates="vehicle"
+        "Order", back_populates="vehicle", cascade="all, delete-orphan"
     )
 
 
@@ -56,12 +60,14 @@ class Order(Base):
     kilometraje: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     notas_internas: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     fecha_entrada: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
+        DateTime(timezone=True), default=_utcnow, nullable=False
     )
     fecha_actualizacion: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow, nullable=False
     )
-    fecha_entrega: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    fecha_entrega: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     vehicle: Mapped["Vehicle"] = relationship("Vehicle", back_populates="ordenes")
     items: Mapped[List["BudgetItem"]] = relationship(
