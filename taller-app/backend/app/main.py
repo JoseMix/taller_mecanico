@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
-from app.routes import config, clientes, vehiculos
+from app.routes import config, clientes, vehiculos, ordenes
 
 Base.metadata.create_all(bind=engine)
 
@@ -17,3 +17,4 @@ app.add_middleware(
 app.include_router(config.router)
 app.include_router(clientes.router)
 app.include_router(vehiculos.router)
+app.include_router(ordenes.router)
