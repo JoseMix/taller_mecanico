@@ -5,6 +5,7 @@ import { useOrdersStore } from '@/stores/orders.store'
 import { usePolling } from '@/composables/usePolling'
 import KanbanBoard from '@/components/KanbanBoard.vue'
 import OrderDetailSheet from '@/components/OrderDetailSheet.vue'
+import NewOrderDialog from '@/components/NewOrderDialog.vue'
 import { Button } from '@/components/ui/button'
 
 type OrderResumen = components['schemas']['OrderResumen']
@@ -14,8 +15,13 @@ const ordersStore = useOrdersStore()
 // Polling: fetch orders every 30 seconds
 usePolling(() => ordersStore.fetchOrders(), 30_000)
 
-// Placeholder: NewOrderDialog will be implemented in Task 26
-const showNewOrderDialog = ref(false)
+// NewOrderDialog state
+const newOrderOpen = ref(false)
+
+function handleOrderCreated() {
+  newOrderOpen.value = false
+  ordersStore.fetchOrders()
+}
 
 // Selected order for OrderDetailSheet
 const selectedOrder = ref<OrderResumen | null>(null)
@@ -37,7 +43,7 @@ function handleSheetClose() {
     <!-- Toolbar -->
     <div class="flex items-center justify-between shrink-0">
       <h1 class="text-xl font-bold">Tablero de Órdenes</h1>
-      <Button @click="showNewOrderDialog = true">
+      <Button @click="newOrderOpen = true">
         Nueva Orden
       </Button>
     </div>
@@ -52,8 +58,8 @@ function handleSheetClose() {
       <KanbanBoard @order-click="handleOrderClick" />
     </div>
 
-    <!-- Placeholder: NewOrderDialog (Task 26) -->
-    <!-- <NewOrderDialog v-model:open="showNewOrderDialog" /> -->
+    <!-- NewOrderDialog -->
+    <NewOrderDialog v-model:open="newOrderOpen" @created="handleOrderCreated" />
 
     <!-- OrderDetailSheet -->
     <OrderDetailSheet
