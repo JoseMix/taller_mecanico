@@ -4,7 +4,15 @@ async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const text = await res.text()
     let detail = text
-    try { detail = JSON.parse(text).detail ?? text } catch {}
+    try {
+      const json = JSON.parse(text)
+      if (typeof json.detail === 'string') {
+        detail = json.detail
+      } else if (Array.isArray(json.detail)) {
+        // FastAPI validation errors: [{msg, loc, type}, ...]
+        detail = json.detail.map((e: { msg?: string }) => e.msg ?? JSON.stringify(e)).join('; ')
+      }
+    } catch {}
     throw new Error(detail)
   }
   if (res.status === 204) return undefined as T

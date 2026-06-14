@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { useDebounceFn } from '@vueuse/core'
+import { ref, computed, watch } from 'vue'
+import { toast } from 'vue-sonner'
 import type { components } from '@/types/api'
 import { apiGet, apiPost } from '@/lib/api'
 import { useOrdersStore } from '@/stores/orders.store'
+import { guardInt } from '@/lib/inputGuards'
 import {
   Dialog,
   DialogContent,
@@ -48,44 +49,12 @@ const searchError = ref<string | null>(null)
 const vehicleNotFound = ref(false)
 const foundVehicle = ref<VehicleConHistorial | null>(null)
 
-const debouncedSearch = useDebounceFn(async (value: string) => {
-  if (!value.trim()) {
-    searchError.value = null
-    vehicleNotFound.value = false
-    foundVehicle.value = null
-    return
-  }
-  searchLoading.value = true
-  searchError.value = null
-  vehicleNotFound.value = false
-  foundVehicle.value = null
-  try {
-    const result = await apiGet<VehicleConHistorial>(
-      `/vehiculos/buscar?matricula=${encodeURIComponent(value.trim())}`,
-    )
-    foundVehicle.value = result
-    step.value = 3
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : ''
-    // 404 = vehicle not found; any other error = API error
-    if (msg.toLowerCase().includes('not found') || msg.includes('404') || msg === 'Not Found') {
-      vehicleNotFound.value = true
-    } else {
-      searchError.value = msg || 'Error al buscar el vehículo'
-    }
-  } finally {
-    searchLoading.value = false
-  }
-}, 400)
-
 watch(matriculaInput, (val) => {
-  // Reset state when user clears or changes input
   if (!val.trim()) {
     vehicleNotFound.value = false
     foundVehicle.value = null
     searchError.value = null
   }
-  debouncedSearch(val)
 })
 
 function handleSearchKeydown(e: KeyboardEvent) {
@@ -101,11 +70,15 @@ async function searchNow() {
   vehicleNotFound.value = false
   foundVehicle.value = null
   try {
-    const result = await apiGet<VehicleConHistorial>(
+    const results = await apiGet<VehicleConHistorial[]>(
       `/vehiculos/buscar?matricula=${encodeURIComponent(matriculaInput.value.trim())}`,
     )
-    foundVehicle.value = result
-    step.value = 3
+    if (!results || results.length === 0) {
+      vehicleNotFound.value = true
+    } else {
+      foundVehicle.value = results[0]
+      step.value = 3
+    }
   } catch (e) {
     const msg = e instanceof Error ? e.message : ''
     if (msg.toLowerCase().includes('not found') || msg.includes('404') || msg === 'Not Found') {
@@ -167,8 +140,46 @@ const vehicleForm = ref<VehicleForm>(emptyVehicleForm())
 const step2Error = ref<string | null>(null)
 const step2Loading = ref(false)
 
+// ─── Per-field validation ──────────────────────────────────────────────────
+
+const touched = ref<Record<string, boolean>>({})
+
+function touch(field: string) {
+  touched.value[field] = true
+}
+
+function validateTelefono(val: string): string | null {
+  const v = val.trim()
+  if (!v) return 'El teléfono es obligatorio'
+  if (!/^\+?\d{7,15}$/.test(v)) return 'Solo dígitos (7-15 cifras, opcionalmente + al inicio)'
+  return null
+}
+
+function validateEmail(val: string): string | null {
+  const v = val.trim()
+  if (!v) return null
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Introduce un email válido (debe contener @)'
+  return null
+}
+
+const telefonoError = computed(() =>
+  touched.value['telefono'] ? validateTelefono(clientForm.value.telefono) : null,
+)
+const emailError = computed(() =>
+  touched.value['email'] ? validateEmail(clientForm.value.email) : null,
+)
+
 async function handleStep2Submit() {
+  // Show all inline errors immediately on submit attempt
+  touch('telefono')
+  touch('email')
+
   step2Error.value = null
+
+  // Inline field errors take priority — let user fix them first
+  if (validateTelefono(clientForm.value.telefono) || validateEmail(clientForm.value.email)) {
+    return
+  }
 
   // Validate required client fields
   if (
@@ -189,7 +200,7 @@ async function handleStep2Submit() {
     !vehicleForm.value.matricula.trim() ||
     !vehicleForm.value.marca.trim() ||
     !vehicleForm.value.modelo.trim() ||
-    !vehicleForm.value.año.trim()
+    !vehicleForm.value.año
   ) {
     step2Error.value = 'Por favor, rellena todos los campos obligatorios del vehículo.'
     return
@@ -273,7 +284,7 @@ async function handleStep3Submit() {
     return
   }
 
-  const km = orderForm.value.kilometraje.trim()
+  const km = String(orderForm.value.kilometraje ?? '').trim()
   const kilometrajeNum = km ? parseInt(km, 10) : null
   if (km && isNaN(kilometrajeNum!)) {
     step3Error.value = 'El kilometraje debe ser un número entero.'
@@ -283,17 +294,19 @@ async function handleStep3Submit() {
   step3Loading.value = true
   try {
     await apiPost('/ordenes', {
-      vehiculo_id: vehiculoId,
+      vehicle_id: vehiculoId,
       descripcion: orderForm.value.descripcion.trim(),
       kilometraje: kilometrajeNum,
       notas_internas: orderForm.value.notas_internas.trim() || null,
     })
 
     await ordersStore.fetchOrders()
+    toast.success('Orden de trabajo creada')
     emit('created')
     handleClose()
   } catch (e) {
     step3Error.value = e instanceof Error ? e.message : 'Error al crear la orden'
+    toast.error(step3Error.value)
   } finally {
     step3Loading.value = false
   }
@@ -312,6 +325,7 @@ function resetAll() {
   vehicleForm.value = emptyVehicleForm()
   step2Error.value = null
   step2Loading.value = false
+  touched.value = {}
   createdVehicleId.value = null
   createdClienteData.value = null
   orderForm.value = { descripcion: '', kilometraje: '', notas_internas: '' }
@@ -349,29 +363,40 @@ function stepDescription() {
 
 <template>
   <Dialog :open="open" @update:open="(v) => { if (!v) handleClose() }">
-    <DialogContent class="max-w-lg max-h-[90vh] overflow-y-auto">
+    <DialogContent class="max-w-xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>{{ stepTitle() }}</DialogTitle>
         <DialogDescription>{{ stepDescription() }}</DialogDescription>
       </DialogHeader>
 
       <!-- ── Step indicator ──────────────────────────────────────────────── -->
-      <div class="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-        <span
-          v-for="n in [1, 2, 3]"
-          :key="n"
-          class="flex items-center gap-1"
-        >
-          <span
-            class="inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold"
-            :class="step === n
-              ? 'bg-primary text-primary-foreground'
-              : step > n
-                ? 'bg-primary/30 text-primary'
-                : 'bg-muted text-muted-foreground'"
-          >{{ n }}</span>
-          <span v-if="n < 3" class="w-6 h-px bg-border inline-block" />
-        </span>
+      <div class="flex items-center justify-center gap-0 my-1">
+        <template v-for="n in [1, 2, 3]" :key="n">
+          <div class="flex flex-col items-center gap-1.5">
+            <span
+              class="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold border-2 transition-all duration-300"
+              :class="step === n
+                ? 'bg-primary border-primary text-primary-foreground shadow-cyan-glow-sm'
+                : step > n
+                  ? 'bg-primary/20 border-primary/50 text-primary'
+                  : 'bg-muted border-border text-muted-foreground'"
+            >
+              <svg v-if="step > n" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span v-else>{{ n }}</span>
+            </span>
+            <span
+              class="text-[10px] font-medium uppercase tracking-wide transition-colors duration-300"
+              :class="step === n ? 'text-primary' : step > n ? 'text-primary/60' : 'text-muted-foreground/60'"
+            >{{ ['Búsqueda', 'Registro', 'Orden'][n - 1] }}</span>
+          </div>
+          <div
+            v-if="n < 3"
+            class="w-16 h-px mx-1 mb-5 transition-all duration-500"
+            :class="step > n ? 'bg-primary/50' : 'bg-border'"
+          />
+        </template>
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════════ -->
@@ -452,13 +477,39 @@ function stepDescription() {
             </div>
             <div class="space-y-1">
               <Label for="c-tel">Teléfono <span class="text-destructive">*</span></Label>
-              <Input id="c-tel" v-model="clientForm.telefono" placeholder="612345678" :disabled="step2Loading" />
+              <Input
+                id="c-tel"
+                v-model="clientForm.telefono"
+                placeholder="612345678"
+                inputmode="tel"
+                :disabled="step2Loading"
+                :class="telefonoError ? 'border-destructive focus-visible:ring-destructive/30' : ''"
+                @blur="touch('telefono')"
+                @input="touch('telefono')"
+              />
+              <p v-if="telefonoError" class="flex items-center gap-1 text-xs text-destructive mt-0.5">
+                <svg class="w-3 h-3 shrink-0" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 4.25a.75.75 0 0 0-1.5 0v3.5a.75.75 0 0 0 1.5 0v-3.5zm-.75 6a.875.875 0 1 0 0-1.75.875.875 0 0 0 0 1.75z"/></svg>
+                {{ telefonoError }}
+              </p>
             </div>
           </div>
 
           <div class="space-y-1">
             <Label for="c-email">Email <span class="text-muted-foreground text-xs">(opcional)</span></Label>
-            <Input id="c-email" v-model="clientForm.email" type="email" placeholder="juan@ejemplo.com" :disabled="step2Loading" />
+            <Input
+              id="c-email"
+              v-model="clientForm.email"
+              type="email"
+              placeholder="juan@ejemplo.com"
+              :disabled="step2Loading"
+              :class="emailError ? 'border-destructive focus-visible:ring-destructive/30' : ''"
+              @blur="touch('email')"
+              @input="touch('email')"
+            />
+            <p v-if="emailError" class="flex items-center gap-1 text-xs text-destructive mt-0.5">
+              <svg class="w-3 h-3 shrink-0" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 4.25a.75.75 0 0 0-1.5 0v3.5a.75.75 0 0 0 1.5 0v-3.5zm-.75 6a.875.875 0 1 0 0-1.75.875.875 0 0 0 0 1.75z"/></svg>
+              {{ emailError }}
+            </p>
           </div>
 
           <div class="space-y-1">
@@ -491,7 +542,7 @@ function stepDescription() {
             </div>
             <div class="space-y-1">
               <Label for="v-año">Año <span class="text-destructive">*</span></Label>
-              <Input id="v-año" v-model="vehicleForm.año" type="number" placeholder="2019" :disabled="step2Loading" />
+              <Input id="v-año" v-model="vehicleForm.año" type="number" inputmode="numeric" placeholder="2019" :disabled="step2Loading" @keydown="guardInt" />
             </div>
           </div>
 
@@ -581,9 +632,11 @@ function stepDescription() {
             id="o-km"
             v-model="orderForm.kilometraje"
             type="number"
+            inputmode="numeric"
             placeholder="85000"
             min="0"
             :disabled="step3Loading"
+            @keydown="guardInt"
           />
         </div>
 

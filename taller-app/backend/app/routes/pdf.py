@@ -44,18 +44,19 @@ def download_pdf(id: int, db: Session = Depends(get_db)):
     if not order:
         raise HTTPException(status_code=404, detail="Orden no encontrada.")
 
-    # 2. Only terminal orders get invoices
-    if order.estado not in TERMINAL_STATES:
+    # 2. Only orders with a closed budget get invoices
+    PDF_ALLOWED = TERMINAL_STATES | {"finalizada"}
+    if order.estado not in PDF_ALLOWED:
         raise HTTPException(
             status_code=422,
             detail=(
-                f"Solo se puede generar factura para órdenes en estado terminal "
-                f"(entregado / rechazado). Estado actual: '{order.estado}'."
+                f"Solo se puede generar factura para órdenes finalizadas o entregadas. "
+                f"Estado actual: '{order.estado}'."
             ),
         )
 
     # 3. Determine invoice type and which items to include
-    if order.estado == "entregado":
+    if order.estado in {"entregado", "finalizada"}:
         tipo_factura = "normal"
         relevant_items = [i for i in order.items if not i.es_cargo_cancelacion]
     else:  # rechazado

@@ -36,7 +36,7 @@ export const useOrdersStore = defineStore('orders', () => {
   }
 
   async function updateEstado(orderId: number, nuevo_estado: EstadoOrden, items_cancelacion?: BudgetItemCreate[]) {
-    await apiPatch<Order>(`/ordenes/${orderId}/estado`, { estado: nuevo_estado, items_cancelacion })
+    await apiPatch<Order>(`/ordenes/${orderId}/estado`, { nuevo_estado, items_cancelacion })
     await fetchOrders()
   }
 

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -12,54 +12,116 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 200 98% 39%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+    --ring: 200 98% 39%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    /* Navy-black background — el alma del look automotriz */
+    --background: 222 47% 5%;
+    --foreground: 210 40% 96%;
+
+    /* Cards levemente más claras que el bg */
+    --card: 220 40% 8%;
+    --card-foreground: 210 40% 96%;
+
+    /* Popovers / dropdowns un poco más claros */
+    --popover: 220 38% 10%;
+    --popover-foreground: 210 40% 96%;
+
+    /* PRIMARY = cyan brillante — el acento que define todo */
+    --primary: 200 98% 39%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary = slate oscuro */
+    --secondary: 220 30% 14%;
+    --secondary-foreground: 210 40% 80%;
+
+    /* Muted = levemente más claro */
+    --muted: 220 30% 12%;
+    --muted-foreground: 215 20% 55%;
+
+    /* Accent = sky un poco más claro */
+    --accent: 199 89% 30%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive = rojo puro para badges/textos */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Border muy sutil — apenas perceptible */
+    --border: 220 30% 16%;
+    --input: 220 30% 13%;
+
+    /* Ring = cyan, para focus states */
+    --ring: 200 98% 39%;
   }
 
   * {
     @apply border-border;
     outline-color: hsl(var(--ring) / 0.5);
+    /* Transiciones suaves globales */
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
   }
 
   body {
     @apply bg-background text-foreground font-sans;
+    /* Grid pattern de diagnóstico automotriz — muy sutil */
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.35) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.35) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-attachment: fixed;
+  }
+
+  /* Números, matrículas y códigos en Geist Mono */
+  .font-mono,
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Scrollbar personalizada — estilo industrial oscuro                   */
+/* ------------------------------------------------------------------ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.6);
+}
+
+/* ------------------------------------------------------------------ */
+/* Keyframes                                                            */
+/* ------------------------------------------------------------------ */
 @keyframes accordion-down {
   from { height: 0; }
   to { height: var(--reka-accordion-content-height, auto); }
@@ -68,4 +130,29 @@
 @keyframes accordion-up {
   from { height: var(--reka-accordion-content-height, auto); }
   to { height: 0; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Utilidades adicionales                                               */
+/* ------------------------------------------------------------------ */
+@layer utilities {
+  /* Texto con brillo cyan para elementos destacados */
+  .text-cyan-glow {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 12px hsl(var(--primary) / 0.5);
+  }
+
+  /* Card con borde cyan sutil al hover */
+  .card-interactive {
+    transition: box-shadow 200ms ease, transform 150ms ease;
+  }
+  .card-interactive:hover {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.4), 0 4px 24px hsl(var(--primary) / 0.08);
+    transform: translateY(-1px);
+  }
 }

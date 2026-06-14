@@ -1,8 +1,14 @@
+import unicodedata
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+
+
+def _normalize(s: str) -> str:
+    """Quita tildes y pasa a lowercase para comparación accent-insensitive."""
+    return unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode('ascii').lower()
 
 from app.database import get_db
 from app.models import Cliente
@@ -52,13 +58,14 @@ def buscar_clientes(
     If both are provided, apellido takes precedence.
     """
     if apellido is not None:
-        return (
-            db.query(Cliente)
-            .filter(Cliente.apellido.ilike(f"%{apellido}%"))
-            .all()
-        )
+        # Filtrado en Python con normalización: quita tildes en query Y en apellido almacenado
+        # Permite "martinez" → "Martínez", "garcia" → "García", etc.
+        normalized_q = _normalize(apellido)
+        all_clientes = db.query(Cliente).all()
+        return [c for c in all_clientes if normalized_q in _normalize(c.apellido or '')]
     if nif_dni is not None:
-        return db.query(Cliente).filter(Cliente.nif_dni == nif_dni).all()
+        # Prefix-match: "18650000" encuentra "18650000Z"
+        return db.query(Cliente).filter(Cliente.nif_dni.ilike(f"{nif_dni}%")).all()
     raise HTTPException(status_code=400, detail="Se requiere apellido o nif_dni")
 
 

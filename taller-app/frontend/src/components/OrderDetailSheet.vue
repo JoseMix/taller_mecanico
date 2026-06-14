@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { toast } from 'vue-sonner'
 import type { components } from '@/types/api'
 import { useOrdersStore } from '@/stores/orders.store'
+import { guardInt } from '@/lib/inputGuards'
 import {
   Sheet,
   SheetContent,
@@ -22,6 +24,14 @@ type BudgetItem = components['schemas']['BudgetItem']
 type TipoItem = components['schemas']['TipoItem']
 
 const LOCK_STATES = new Set<EstadoOrden>(['en_reparacion', 'finalizada', 'entregado', 'rechazado'])
+
+const ESTADO_TOAST: Partial<Record<EstadoOrden, string>> = {
+  presupuestado: 'Presupuesto enviado al cliente',
+  en_reparacion: 'Reparación iniciada',
+  finalizada: 'Reparación finalizada',
+  entregado: 'Vehículo entregado al cliente',
+  rechazado: 'Orden rechazada',
+}
 
 const ESTADO_LABELS: Record<EstadoOrden, string> = {
   recibida: 'Recibida',
@@ -95,6 +105,9 @@ const showCancellationDialog = ref(false)
 
 // --------------- computed ---------------
 const isLocked = computed(() => props.order ? LOCK_STATES.has(props.order.estado) : false)
+const kmEditable = computed(() =>
+  props.order?.estado === 'recibida' || props.order?.estado === 'presupuestado',
+)
 
 const estadoLabel = computed(() =>
   props.order ? (ESTADO_LABELS[props.order.estado] ?? props.order.estado) : '',
@@ -146,11 +159,14 @@ function formatSubtotal(item: BudgetItem) {
 }
 
 // --------------- watchers ---------------
-// When the order changes (panel opens / order clicked), sync editable fields and reload items
+// Reset editable fields only when the selected ORDER changes (new ID).
+// Watching the full object would fire on every polling update (new reference, same data)
+// and wipe whatever the user was typing.
 watch(
-  () => props.order,
-  async (order) => {
-    if (!order) return
+  () => props.order?.id,
+  async (id) => {
+    if (!id) return
+    const order = props.order!
     editDescripcion.value = order.descripcion ?? ''
     editKilometraje.value = order.kilometraje ?? null
     editNotas.value = order.notas_internas ?? null
@@ -214,8 +230,10 @@ async function handleSaveFields() {
     })
     fieldSuccess.value = true
     setTimeout(() => { fieldSuccess.value = false }, 2000)
+    toast.success('Cambios guardados')
   } catch (e) {
     fieldError.value = e instanceof Error ? e.message : 'Error al guardar'
+    toast.error(fieldError.value)
   } finally {
     isSavingFields.value = false
   }
@@ -227,10 +245,11 @@ async function handleChangeEstado(nuevo_estado: EstadoOrden) {
   estadoError.value = null
   try {
     await ordersStore.updateEstado(props.order.id, nuevo_estado)
-    // refresh items if transitioned to terminal state
     await fetchItems()
+    toast.success(ESTADO_TOAST[nuevo_estado] ?? 'Estado actualizado')
   } catch (e) {
     estadoError.value = e instanceof Error ? e.message : 'Error al cambiar estado'
+    toast.error(estadoError.value)
   } finally {
     isChangingEstado.value = false
   }
@@ -261,8 +280,10 @@ async function handleSaveNew() {
     })
     showAddForm.value = false
     await fetchItems()
+    toast.success('Concepto añadido al presupuesto')
   } catch (e) {
     itemsError.value = e instanceof Error ? e.message : 'Error al añadir item'
+    toast.error(itemsError.value)
   } finally {
     isSavingNew.value = false
   }
@@ -296,8 +317,10 @@ async function handleSaveItem(itemId: number) {
     })
     editingItemId.value = null
     await fetchItems()
+    toast.success('Concepto actualizado')
   } catch (e) {
     itemsError.value = e instanceof Error ? e.message : 'Error al actualizar item'
+    toast.error(itemsError.value)
   } finally {
     isSavingItem.value = false
   }
@@ -309,8 +332,10 @@ async function handleDeleteItem(itemId: number) {
   try {
     await ordersStore.deleteItem(props.order.id, itemId)
     await fetchItems()
+    toast.success('Concepto eliminado')
   } catch (e) {
     itemsError.value = e instanceof Error ? e.message : 'Error al eliminar item'
+    toast.error(itemsError.value)
   }
 }
 
@@ -386,12 +411,18 @@ function handleSheetClose() {
               <div>
                 <label class="block text-xs font-medium mb-1">Kilometraje</label>
                 <input
+                  v-if="kmEditable"
                   v-model.number="editKilometraje"
                   type="number"
+                  inputmode="numeric"
                   min="0"
                   class="w-full rounded border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                   placeholder="Km del vehículo"
+                  @keydown="guardInt"
                 />
+                <p v-else class="px-3 py-2 text-sm text-muted-foreground bg-muted/40 rounded border border-border">
+                  {{ editKilometraje != null ? editKilometraje.toLocaleString('es-ES') + ' km' : '—' }}
+                </p>
               </div>
               <div>
                 <label class="block text-xs font-medium mb-1">Notas internas</label>

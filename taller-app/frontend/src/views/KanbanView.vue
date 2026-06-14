@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { components } from '@/types/api'
 import { useOrdersStore } from '@/stores/orders.store'
 import { usePolling } from '@/composables/usePolling'
@@ -23,18 +23,22 @@ function handleOrderCreated() {
   ordersStore.fetchOrders()
 }
 
-// Selected order for OrderDetailSheet
-const selectedOrder = ref<OrderResumen | null>(null)
+// Selected order — derived from the store so it always reflects the latest state
+const selectedOrderId = ref<number | null>(null)
 const sheetOpen = ref(false)
 
+const selectedOrder = computed<OrderResumen | null>(
+  () => ordersStore.orders.find(o => o.id === selectedOrderId.value) ?? null,
+)
+
 function handleOrderClick(order: OrderResumen) {
-  selectedOrder.value = order
+  selectedOrderId.value = order.id
   sheetOpen.value = true
 }
 
 function handleSheetClose() {
   sheetOpen.value = false
-  selectedOrder.value = null
+  selectedOrderId.value = null
 }
 </script>
 
