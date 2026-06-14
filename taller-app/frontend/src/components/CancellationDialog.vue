@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import type { components } from '@/types/api'
 import { useOrdersStore } from '@/stores/orders.store'
+import { guardDecimal } from '@/lib/inputGuards'
 import {
   Dialog,
   DialogContent,
@@ -132,10 +133,12 @@ function handleClose() {
             v-model.number="line.cantidad"
             class="h-8 w-20 rounded border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
             type="number"
+            inputmode="decimal"
             placeholder="Cant."
             min="0"
             step="0.01"
             :disabled="isLoading"
+            @keydown="guardDecimal"
           />
 
           <!-- precio_unitario -->
@@ -143,10 +146,12 @@ function handleClose() {
             v-model.number="line.precio_unitario"
             class="h-8 w-24 rounded border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
             type="number"
+            inputmode="decimal"
             placeholder="P. Unit. €"
             min="0"
             step="0.01"
             :disabled="isLoading"
+            @keydown="guardDecimal"
           />
 
           <!-- remove row (only if more than one) -->

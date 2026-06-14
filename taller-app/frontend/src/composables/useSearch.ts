@@ -9,7 +9,13 @@ type VehicleConHistorial = components['schemas']['VehicleConHistorial']
 export type SearchType = 'matricula' | 'nif_dni' | 'apellido'
 
 const MATRICULA_RE = /^[0-9]{4}-?[A-Z]{3}$/i
-const NIF_DNI_RE = /^[0-9]{7,8}[A-Z]$/i
+const NIF_DNI_RE = /^[0-9]{7,8}[A-Za-z]?$/i // letra opcional → soporta búsqueda parcial
+
+// Quita tildes y pasa a minúsculas para búsqueda accent-insensitive
+function normalizeStr(s: string): string {
+  // eslint-disable-next-line no-misleading-character-class
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+}
 
 export function useSearch() {
   const query = ref('')
@@ -50,8 +56,10 @@ export function useSearch() {
           `/clientes/buscar?nif_dni=${encodeURIComponent(trimmed)}`,
         )
       } else {
+        // Normalizar antes de enviar: quita tildes y pasa a lowercase
+        // El backend compara de la misma forma → "martinez" encuentra "Martínez"
         clienteResults.value = await apiGet<Cliente[]>(
-          `/clientes/buscar?apellido=${encodeURIComponent(trimmed)}`,
+          `/clientes/buscar?apellido=${encodeURIComponent(normalizeStr(trimmed))}`,
         )
       }
     } catch (e: unknown) {

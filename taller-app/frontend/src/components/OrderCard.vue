@@ -22,13 +22,14 @@ const ESTADO_LABELS: Record<string, string> = {
   rechazado: 'Rechazado',
 }
 
+// Clases optimizadas para fondo dark navy
 const ESTADO_CLASSES: Record<string, string> = {
-  recibida: 'bg-slate-100 text-slate-700 border-slate-300',
-  presupuestado: 'bg-blue-100 text-blue-700 border-blue-300',
-  en_reparacion: 'bg-violet-100 text-violet-700 border-violet-300',
-  finalizada: 'bg-amber-100 text-amber-700 border-amber-300',
-  entregado: 'bg-green-100 text-green-700 border-green-300',
-  rechazado: 'bg-red-100 text-red-700 border-red-300',
+  recibida:      'bg-slate-500/15 text-slate-300 border border-slate-500/30',
+  presupuestado: 'bg-sky-500/15 text-sky-300 border border-sky-500/35',
+  en_reparacion: 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/45 font-semibold',
+  finalizada:    'bg-amber-500/15 text-amber-300 border border-amber-400/35',
+  entregado:     'bg-emerald-500/15 text-emerald-300 border border-emerald-500/35',
+  rechazado:     'bg-red-500/15 text-red-400 border border-red-500/40',
 }
 
 const LOCKED_ESTADOS = ['en_reparacion', 'finalizada', 'entregado', 'rechazado']
@@ -37,10 +38,9 @@ const isLocked = computed(() => LOCKED_ESTADOS.includes(props.order.estado))
 
 const estadoLabel = computed(() => ESTADO_LABELS[props.order.estado] ?? props.order.estado)
 const estadoClass = computed(
-  () => ESTADO_CLASSES[props.order.estado] ?? 'bg-gray-100 text-gray-700 border-gray-300',
+  () => ESTADO_CLASSES[props.order.estado] ?? 'bg-gray-500/15 text-gray-400 border border-gray-500/30',
 )
 
-// OrderResumen exposes `total` (server-computed). Display it if present.
 const budgetFormatted = computed(() => {
   const total = props.order.total ?? 0
   return total.toLocaleString('es-ES', {
@@ -52,7 +52,6 @@ const budgetFormatted = computed(() => {
 const vehicleInfo = computed(() => {
   const v = props.order.vehiculo
   if (!v) return ''
-  // año is encoded as "año" in the type (año)
   const año = (v as Record<string, unknown>)['año'] as number | undefined
   return `${v.marca} ${v.modelo}${año ? ' ' + año : ''}`
 })
@@ -63,31 +62,53 @@ const apellido = computed(() => props.order.vehiculo?.cliente?.apellido ?? '')
 
 <template>
   <Card
-    class="cursor-pointer hover:ring-2 hover:ring-primary/40 transition-all select-none"
+    class="cursor-pointer select-none transition-all duration-200 hover:-translate-y-0.5 hover:ring-1 hover:ring-primary/40 hover:shadow-cyan-glow-sm"
     @click="emit('click', order)"
   >
     <CardHeader class="pb-1">
       <div class="flex items-center justify-between gap-2">
-        <span class="font-mono font-bold text-base tracking-tight">{{ order.numero_orden }}</span>
-        <div class="flex items-center gap-1">
-          <span v-if="isLocked" class="text-sm" title="Orden bloqueada">🔒</span>
+        <!-- Número de orden en Geist Mono -->
+        <span class="font-mono font-bold text-sm tracking-tight text-foreground">
+          {{ order.numero_orden }}
+        </span>
+        <div class="flex items-center gap-1.5">
+          <!-- Icono candado discreto -->
+          <svg
+            v-if="isLocked"
+            class="w-3 h-3 text-muted-foreground flex-shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            title="Orden bloqueada"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <!-- Badge de estado -->
           <span
-            :class="['inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium', estadoClass]"
+            :class="['inline-flex items-center rounded-full px-2 py-0.5 text-xs', estadoClass]"
           >
             {{ estadoLabel }}
           </span>
         </div>
       </div>
     </CardHeader>
-    <CardContent class="pt-0 space-y-1">
+    <CardContent class="pt-0 space-y-1.5">
+      <!-- Matrícula — destacada en Geist Mono -->
       <div v-if="matricula" class="flex items-center gap-2">
-        <span class="font-bold text-sm">{{ matricula }}</span>
-        <span class="text-xs text-muted-foreground">{{ vehicleInfo }}</span>
+        <span class="font-mono font-bold text-xs tracking-widest uppercase text-primary/90">
+          {{ matricula }}
+        </span>
+        <span class="text-xs text-muted-foreground truncate">{{ vehicleInfo }}</span>
       </div>
       <div v-if="apellido" class="text-xs text-muted-foreground">
         Cliente: <span class="font-medium text-foreground">{{ apellido }}</span>
       </div>
-      <div class="text-xs font-medium text-right pt-1">
+      <!-- Total — alineado a la derecha, con color sutil -->
+      <div class="text-xs font-mono font-medium text-right text-muted-foreground pt-0.5">
         {{ budgetFormatted }}
       </div>
     </CardContent>
